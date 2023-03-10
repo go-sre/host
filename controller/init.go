@@ -75,3 +75,40 @@ func AddIngressRoutes(buf []byte) ([]Route, []error) {
 	}
 	return routes, nil
 }
+func InitEgressControllers(read func() ([]byte, error), update func(routes []Route) error) []error {
+	if read == nil || update == nil {
+		return []error{errors.New("invalid argument: read or updater function is nil")}
+	}
+	buf, err := read()
+	if err != nil {
+		return []error{err}
+	}
+	routes, errs := AddEgressRoutes(buf)
+	if len(errs) > 0 {
+		return errs
+	}
+	err = update(routes)
+	if err != nil {
+		return []error{err}
+	}
+	return nil
+}
+
+func InitIngressControllers(read func() ([]byte, error), update func(routes []Route) error) []error {
+	if read == nil || update == nil {
+		return []error{errors.New("invalid argument: read or update function is nil")}
+	}
+	buf, err := read()
+	if err != nil {
+		return []error{err}
+	}
+	routes, errs := AddIngressRoutes(buf)
+	if len(errs) > 0 {
+		return errs
+	}
+	err = update(routes)
+	if err != nil {
+		return []error{err}
+	}
+	return nil
+}
