@@ -92,9 +92,9 @@ var defaultLogFn = func(e *data.Entry) {
 
 
 
-[datapkg]: <https://pkg.go.dev/github.com/idiomatic-go/accessevents/data>
-[logpkg]: <https://pkg.go.dev/github.com/idiomatic-go/accessevents/log>
-[controllerpkg]: <https://pkg.go.dev/github.com/idiomatic-go/resiliency/controller>
-[messagingpkg]: <https://pkg.go.dev/github.com/idiomatic-go/motif/messaging>
-[middlewarepkg]: <https://pkg.go.dev/github.com/idiomatic-go/accessevents/middleware>
+[datapkg]: <https://pkg.go.dev/github.com/gotemplates/host/accessdata>
+[logpkg]: <https://pkg.go.dev/github.com/gotemplates/host/accesslog>
+[controllerpkg]: <https://pkg.go.dev/github.com/gotemplates/host/controller>
+[messagingpkg]: <https://pkg.go.dev/github.com/gotemplates/host/messaging>
+[middlewarepkg]: <https://pkg.go.dev/github.com/gotemplates/host/middleware>
 
