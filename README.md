@@ -1,0 +1,2 @@
+# host
+Application host templates
