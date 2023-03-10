@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"github.com/gotemplates/host/shared"
 	"net/http"
 	"strconv"
 	"time"
@@ -63,7 +62,7 @@ func timeoutState(m map[string]string, t *timeout) {
 		val = int64(t.Duration() / time.Millisecond)
 		//	statusCode = t.StatusCode()
 	}
-	m[shared.TimeoutName] = strconv.Itoa(int(val))
+	m[TimeoutName] = strconv.Itoa(int(val))
 }
 
 func (t *timeout) Duration() time.Duration {

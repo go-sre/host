@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/gotemplates/host/shared"
 	"golang.org/x/time/rate"
 	"math/rand"
 	"net/http"
@@ -97,9 +96,9 @@ func retryState(m map[string]string, r *retry, retried bool) map[string]string {
 	if m == nil {
 		m = make(map[string]string, 16)
 	}
-	m[shared.RetryName] = name
-	m[shared.RetryRateLimitName] = fmt.Sprintf("%v", limit)
-	m[shared.RetryRateBurstName] = strconv.Itoa(burst)
+	m[RetryName] = name
+	m[RetryRateLimitName] = fmt.Sprintf("%v", limit)
+	m[RetryRateBurstName] = strconv.Itoa(burst)
 	return m
 
 }

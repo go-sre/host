@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/accessdata"
 	"net/http"
 	"time"
 )
@@ -37,7 +36,7 @@ func ExampleActuator_newActuator() {
 
 func ExampleController_newController() {
 	t := newTable(true, false)
-	route := NewRoute("test", accessdata.EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
 
 	ctrl, _ := newController(route, t)
 
@@ -61,7 +60,7 @@ func ExampleController_newController() {
 
 func ExampleController_newController_config() {
 	t := newTable(true, false)
-	route := NewRoute("test", accessdata.EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), nil, NewRateLimiterConfig(100, 10, 503), nil)
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), nil, NewRateLimiterConfig(100, 10, 503), nil)
 
 	ctrl, _ := newController(route, t)
 
@@ -86,20 +85,20 @@ func ExampleController_newController_config() {
 
 func ExampleController_newController_Error() {
 	t := newTable(false, false)
-	route := NewRoute("test", accessdata.IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
+	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
 
 	_, errs := newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", accessdata.IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRetryConfig(nil, 100, 10, 0))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRetryConfig(nil, 100, 10, 0))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", accessdata.IngressTraffic, "", false, NewTimeoutConfig(0, 0))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(0, 0))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", accessdata.IngressTraffic, "", false, NewTimeoutConfig(10, 0), NewFailoverConfig(nil))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(10, 0), NewFailoverConfig(nil))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 

@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gotemplates/host/shared"
 	"time"
 )
 
@@ -49,7 +48,7 @@ func ExampleNewRoute() {
 }
 
 func ExampleConfig_Marshal() {
-	config := Route{Name: "test-route", Pattern: "google.com", Traffic: shared.IngressTraffic, Protocol: "HTTP11", Ping: true,
+	config := Route{Name: "test-route", Pattern: "google.com", Traffic: IngressTraffic, Protocol: "HTTP11", Ping: true,
 		Timeout: &TimeoutConfig{
 			StatusCode: 504,
 			Duration:   20000,

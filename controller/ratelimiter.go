@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/gotemplates/host/shared"
 	"golang.org/x/time/rate"
 	"math"
 	"net/http"
@@ -102,8 +101,8 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 	if m == nil {
 		m = make(map[string]string, 16)
 	}
-	m[shared.RateLimitName] = fmt.Sprintf("%v", limit)
-	m[shared.RateBurstName] = strconv.Itoa(burst)
+	m[RateLimitName] = fmt.Sprintf("%v", limit)
+	m[RateBurstName] = strconv.Itoa(burst)
 	return m
 }
 

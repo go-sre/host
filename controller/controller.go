@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/gotemplates/host/accessdata"
 	"net/http"
 	"time"
 )
@@ -196,9 +195,9 @@ func (c *controller) t() *controller {
 
 func (c *controller) state() map[string]string {
 	state := make(map[string]string, 12)
-	state[accessdata.ControllerName] = c.Name()
+	state[ControllerName] = c.Name()
 	if c.ping {
-		state[accessdata.PingName] = "true"
+		state[PingName] = "true"
 	}
 	timeoutState(state, c.timeout)
 	rateLimiterState(state, c.rateLimiter)
@@ -210,8 +209,8 @@ func (c *controller) UpdateHeaders(req *http.Request) {
 		return
 	}
 	req.Header.Add(FromRouteHeaderName, c.name)
-	if req.Header.Get(accessdata.RequestIdHeaderName) == "" {
-		req.Header.Add(accessdata.RequestIdHeaderName, uuid.New().String())
+	if req.Header.Get(RequestIdHeaderName) == "" {
+		req.Header.Add(RequestIdHeaderName, uuid.New().String())
 	}
 }
 
@@ -242,7 +241,7 @@ func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCo
 	retryState(state, c.retry, false)
 
 	req, _ := http.NewRequest(method, uri, nil)
-	req.Header.Add(accessdata.RequestIdHeaderName, requestId)
+	req.Header.Add(RequestIdHeaderName, requestId)
 
 	resp := new(http.Response)
 	resp.StatusCode = statusCode

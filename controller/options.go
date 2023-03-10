@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/shared"
 	"net/http"
 	"time"
 )
@@ -24,6 +23,6 @@ func SetLogFn(fn Log) {
 }
 
 var defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) {
-	s := shared.FmtLog(traffic, start, duration, req, resp, statusFlags, controllerState)
+	s := FmtLog(traffic, start, duration, req, resp, statusFlags, controllerState)
 	fmt.Printf("{%v}\n", s)
 }

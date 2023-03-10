@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/gotemplates/host/shared"
 	"net/http"
 	"time"
 )
@@ -11,22 +10,22 @@ func _ExampleLog() {
 	time.Sleep(time.Second)
 
 	req, _ := http.NewRequest("GET", "http://www.google.com/search?t=test", nil)
-	req.Header.Add(shared.RequestIdHeaderName, "1234-56-7890")
+	req.Header.Add(RequestIdHeaderName, "1234-56-7890")
 
 	resp := new(http.Response)
 	resp.StatusCode = 404
 	state := make(map[string]string)
-	state[shared.ControllerName] = "test-route"
-	state[shared.TimeoutName] = "500"
+	state[ControllerName] = "test-route"
+	state[TimeoutName] = "500"
 
-	state[shared.RateLimitName] = "100"
-	state[shared.RateBurstName] = "10"
+	state[RateLimitName] = "100"
+	state[RateBurstName] = "10"
 
-	state[shared.RetryName] = "true"
-	state[shared.RetryRateLimitName] = "10"
-	state[shared.RetryRateBurstName] = "1"
+	state[RetryName] = "true"
+	state[RetryRateLimitName] = "10"
+	state[RetryRateBurstName] = "1"
 
-	state[shared.FailoverName] = "true"
+	state[FailoverName] = "true"
 
 	defaultLogFn("egress", start, time.Since(start), req, resp, "UT", state)
 

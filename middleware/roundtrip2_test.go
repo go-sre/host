@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"github.com/gotemplates/host/controller"
-	"github.com/gotemplates/host/shared"
 	"net/http"
 	"time"
 )
@@ -66,11 +65,11 @@ func testHttpLog(traffic string, start time.Time, duration time.Duration, req *h
 		"\"retry-rate-limit\":%v,"+
 		"\"retry-rate-burst\":%v,"+
 		"\"failover\":%v",
-		traffic, actuatorState[shared.ControllerName], req.Method, req.Host, req.URL.Path, req.Proto, resp.StatusCode, statusFlags,
-		actuatorState[shared.TimeoutName],
-		actuatorState[shared.RateLimitName], actuatorState[shared.RateBurstName],
-		actuatorState[shared.RetryName], actuatorState[shared.RetryRateLimitName], actuatorState[shared.RetryRateBurstName],
-		actuatorState[shared.FailoverName])
+		traffic, actuatorState[controller.ControllerName], req.Method, req.Host, req.URL.Path, req.Proto, resp.StatusCode, statusFlags,
+		actuatorState[controller.TimeoutName],
+		actuatorState[controller.RateLimitName], actuatorState[controller.RateBurstName],
+		actuatorState[controller.RetryName], actuatorState[controller.RetryRateLimitName], actuatorState[controller.RetryRateBurstName],
+		actuatorState[controller.FailoverName])
 	fmt.Printf("test: Write() -> [{%v}]\n", s)
 }
 
@@ -95,9 +94,9 @@ func init() {
 		return "", true
 	})
 
-	controller.EgressTable.AddController(controller.NewRoute(timeoutRoute, shared.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504)))
-	controller.EgressTable.AddController(controller.NewRoute(rateLimitRoute, shared.EgressTraffic, "", false, controller.NewRateLimiterConfig(2000, 0, 503)))
-	controller.EgressTable.AddController(controller.NewRoute(retryRoute, shared.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504), controller.NewRetryConfig([]int{503, 504}, 0, 0, 0)))
+	controller.EgressTable.AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504)))
+	controller.EgressTable.AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(2000, 0, 503)))
+	controller.EgressTable.AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504), controller.NewRetryConfig([]int{503, 504}, 0, 0, 0)))
 
 	//	controller.SetLogFn(func(entry *data.Entry) {
 	//		log.Write[log.TestOutputHandler, data.JsonFormatter](entry)

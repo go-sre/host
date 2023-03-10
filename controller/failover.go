@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"github.com/gotemplates/host/shared"
 	"strconv"
 )
 
@@ -58,9 +57,9 @@ func (f *failover) validate() error {
 
 func failoverState(m map[string]string, f *failover) {
 	if f == nil {
-		m[shared.FailoverName] = ""
+		m[FailoverName] = ""
 	} else {
-		m[shared.FailoverName] = strconv.FormatBool(f.IsEnabled())
+		m[FailoverName] = strconv.FormatBool(f.IsEnabled())
 	}
 }
 
