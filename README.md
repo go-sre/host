@@ -4,7 +4,7 @@
 
 ## accessdata 
 
-[Data][datapkg] provides the Entry type, which contains all of the data needed for access logging. Also provided are functions and types that define command operators which 
+[AccessData][datapkg] provides the Entry type, which contains all of the data needed for access logging. Also provided are functions and types that define command operators which 
 allow the extraction and formatting of Entry data. The formatting of Entry data is implemented as a template parameter: 
 ~~~
 // Formatter - template parameter for formatting
@@ -16,7 +16,7 @@ Configurable items, specific to a package, are defined in an options.go file.
 
 ## accesslog
 
-[Log][logpkg] encompasses access logging functionality. Seperate operators, and runtime initialization of those operators, are provided for ingress and egress traffic. An output template parameter allows redirection of the access logging: 
+[AccessLog][logpkg] encompasses access logging functionality. Seperate operators, and runtime initialization of those operators, are provided for ingress and egress traffic. An output template parameter allows redirection of the access logging: 
 ~~~
 // OutputHandler - template parameter for log output
 type OutputHandler interface {
