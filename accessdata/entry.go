@@ -203,6 +203,8 @@ func (l *Entry) Value(value string) string {
 		return l.CtrlState[RateBurstName]
 	case FailoverOperator:
 		return l.CtrlState[FailoverName]
+	case ProxyOperator:
+		return l.CtrlState[ProxyName]
 	case RetryOperator:
 		return l.CtrlState[RetryName]
 	case RetryRateLimitOperator:

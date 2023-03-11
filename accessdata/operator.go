@@ -32,6 +32,7 @@ const (
 	RetryRateLimitOperator  = "%RETRY_RATE_LIMIT%"
 	RetryRateBurstOperator  = "%RETRY_RATE_BURST%"
 	FailoverOperator        = "%FAILOVER%"
+	ProxyOperator           = "%PROXY%"
 
 	ResponseStatusCodeOperator    = "%STATUS_CODE%"    // HTTP status code
 	ResponseBytesReceivedOperator = "%BYTES_RECEIVED%" // bytes received
