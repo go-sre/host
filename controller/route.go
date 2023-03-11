@@ -18,6 +18,7 @@ type Route struct {
 	RateLimiter *RateLimiterConfig
 	Retry       *RetryConfig
 	Failover    *FailoverConfig
+	Proxy       *ProxyConfig
 }
 
 type TimeoutConfigJson struct {
@@ -42,6 +43,7 @@ type RouteConfig struct {
 	RateLimiter *RateLimiterConfig
 	Retry       *RetryConfigJson
 	Failover    *FailoverConfig
+	Proxy       *ProxyConfig
 }
 
 func newRoute(name string, config ...any) Route {
@@ -66,6 +68,8 @@ func NewRoute(name string, traffic, protocol string, ping bool, config ...any) R
 			route.RateLimiter = c
 		case *FailoverConfig:
 			route.Failover = c
+		case *ProxyConfig:
+			route.Proxy = c
 		case *RetryConfig:
 			route.Retry = c
 		}

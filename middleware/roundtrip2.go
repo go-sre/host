@@ -27,6 +27,9 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 		ctrl.LogHttpEgress(start, time.Since(start), req, resp, controller.RateLimitFlag, false)
 		return resp, nil
 	}
+	if pc, ok := ctrl.Proxy(); ok && pc.IsEnabled() {
+		req.URL = pc.BuildUrl(req.URL)
+	}
 	tc, _ := ctrl.Timeout()
 	resp, err, statusFlags := w.exchange(tc, req)
 	if err != nil {

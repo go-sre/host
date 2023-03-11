@@ -28,6 +28,7 @@ type Controller interface {
 	RateLimiter() (RateLimiter, bool)
 	Retry() (Retry, bool)
 	Failover() (Failover, bool)
+	Proxy() (Proxy, bool)
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
 	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool)
@@ -72,9 +73,10 @@ type controller struct {
 	rateLimiter *rateLimiter
 	failover    *failover
 	retry       *retry
+	proxy       *proxy
 }
 
-func cloneController[T *timeout | *rateLimiter | *retry | *failover](curr *controller, item T) *controller {
+func cloneController[T *timeout | *rateLimiter | *retry | *proxy | *failover](curr *controller, item T) *controller {
 	newC := new(controller)
 	*newC = *curr
 	switch i := any(item).(type) {
@@ -84,6 +86,8 @@ func cloneController[T *timeout | *rateLimiter | *retry | *failover](curr *contr
 		newC.rateLimiter = i
 	case *failover:
 		newC.failover = i
+	case *proxy:
+		newC.proxy = i
 	case *retry:
 		newC.retry = i
 	default:
@@ -121,6 +125,13 @@ func newController(route Route, t *table) (*controller, []error) {
 	if route.Failover != nil {
 		ctrl.failover = newFailover(route.Name, t, route.Failover)
 		err = ctrl.failover.validate()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if route.Proxy != nil {
+		ctrl.proxy = newProxy(route.Name, t, route.Proxy)
+		err = ctrl.proxy.validate()
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -189,6 +200,13 @@ func (c *controller) Failover() (Failover, bool) {
 	return c.failover, true
 }
 
+func (c *controller) Proxy() (Proxy, bool) {
+	if c.proxy == nil {
+		return nil, false
+	}
+	return c.proxy, true
+}
+
 func (c *controller) t() *controller {
 	return c
 }
@@ -231,19 +249,21 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 	state := c.state()
 	failoverState(state, c.failover)
 	retryState(state, c.retry, retry)
+	proxyState(state, c.proxy)
 
-	defaultLogFn("egress", start, duration, req, resp, statusFlags, state)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
 }
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
 	state := c.state()
 	failoverState(state, c.failover)
-	retryState(state, c.retry, false)
+	//retryState(state, c.retry, false)
+	//proxyState(state, c.proxy)
 
 	req, _ := http.NewRequest(method, uri, nil)
 	req.Header.Add(RequestIdHeaderName, requestId)
 
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
-	defaultLogFn("egress", start, duration, req, resp, statusFlags, state)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
 }

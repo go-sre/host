@@ -17,6 +17,7 @@ const (
 	PingName           = "ping"
 	TimeoutName        = "timeout"
 	FailoverName       = "failover"
+	ProxyName          = "proxy"
 	RetryName          = "retry"
 	RetryRateLimitName = "retryRateLimit"
 	RetryRateBurstName = "retryBurst"
