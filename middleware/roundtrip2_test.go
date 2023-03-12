@@ -264,5 +264,5 @@ func Example_Controller_Proxy() {
 	//Output:
 	//test: Write() -> [{"traffic":"egress","route_name":"proxy-route","method":"GET","host":"www.google.com","path":"/search","protocol":"HTTP/1.1","status_code":200,"status_flags":"","bytes_received":-1,"bytes_sent":0,"timeout_ms":-1,"rate-limit":-1,"rate-burst":-1,"retry":,"retry-rate-limit":-1,"retry-rate-burst":-1,"failover":,"proxy":true}]
 	//test: RoundTrip(handler:true) -> [status_code:200] [err:<nil>]
-	
+
 }
