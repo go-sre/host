@@ -102,13 +102,14 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 Configuration of a logging function is supported via an option, which can be used to change the default:
 
 ~~~
+
 // AccessSetLogFn - allows setting an application configured logging function
 func AccessSetLogFn(fn func(e *data.Entry)) {
-// implementation details
+    // implementation details
 }
 
-var defaultLogFn = func(e *data.Entry) {
-	log.Write[log.LogOutputHandler, data.JsonFormatter](e)
+var defaultLogFn = func(e *accessdata.Entry) {
+	accesslog.Write[accesslog.LogOutputHandler, accessdata.JsonFormatter](e)
 }
 ~~~
 
