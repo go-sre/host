@@ -76,17 +76,34 @@ func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.
 Egress logging implementation:
 
 ~~~
-// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
-func (w *wrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+
+// AccessLogWrapTransport - provides a RoundTrip wrapper that applies controller controllers
+func AccessLogWrapTransport(client *http.Client) {
    // implementation details
 }
+
+// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
+func (w *accessWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+   // implementation details
+}
+
+// ControllerHttpHostMetricsHandler - handler that applies controller controllers
+func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+   // implementation details
+}
+
+// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
+func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+   // implementation details
+}
+
 ~~~
 
 Configuration of a logging function is supported via an option, which can be used to change the default:
 
 ~~~
-// SetLogFn - allows setting an application configured logging function
-func SetLogFn(fn func(e *data.Entry)) {
+// AccessSetLogFn - allows setting an application configured logging function
+func AccessSetLogFn(fn func(e *data.Entry)) {
 // implementation details
 }
 
