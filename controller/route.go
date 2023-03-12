@@ -86,6 +86,7 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 	route.Ping = config.Ping
 	route.Protocol = config.Protocol
 	route.Failover = config.Failover
+	route.Proxy = config.Proxy
 	route.RateLimiter = config.RateLimiter
 	if config.Timeout != nil {
 		duration, err := ConvertDuration(config.Timeout.Duration)
@@ -105,7 +106,7 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 }
 
 func (r Route) IsConfigured() bool {
-	return r.Retry != nil || r.Timeout != nil || r.RateLimiter != nil || r.Failover != nil
+	return r.Retry != nil || r.Timeout != nil || r.RateLimiter != nil || r.Failover != nil || r.Proxy != nil
 }
 
 func ConvertDuration(s string) (time.Duration, error) {

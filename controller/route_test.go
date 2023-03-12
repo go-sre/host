@@ -68,17 +68,20 @@ func ExampleConfig_Marshal() {
 		//	Enabled: false,
 		//	invoke:  nil,
 		//},
+		Proxy: &ProxyConfig{
+			Enabled: false,
+			Pattern: "http:",
+		},
 	}
 	buf, err := json.Marshal(config)
 	fmt.Printf("test: Config{} -> [error:%v] %v\n", err, string(buf))
 
 	//list := []Route{config, config} //{Package: "package-one", Config: config}, {Package: "package-two", Config: config}}
-
 	//buf, err = json.Marshal(list)
 	//fmt.Printf("test: []Route -> [error:%v] %v\n", err, string(buf))
 
 	//Output:
-	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Duration":20000,"StatusCode":504},"RateLimiter":{"Limit":100,"Burst":25,"StatusCode":503},"Retry":{"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null}
+	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Duration":20000,"StatusCode":504},"RateLimiter":{"Limit":100,"Burst":25,"StatusCode":503},"Retry":{"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null,"Proxy":{"Enabled":false,"Pattern":"http:"}}
 
 }
 
@@ -164,10 +167,10 @@ func ExampleNewRouteFromConfig() {
 	fmt.Printf("test: NewRouteFromConfig() [err:%v] [route:%v]\n", err, route)
 
 	//Output:
-	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "5x": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil>}]
+	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "5x": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
 	//test: NewRouteFromConfig() [err:<nil>] [timeout:&{500ms 5040}] [retry:&{100 25 4m5s []}]
-	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "x34": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil>}]
-
+	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "x34": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
+	
 }
 
 func _ExampleConfig_Unmarshal() {

@@ -29,6 +29,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 	}
 	if pc, ok := ctrl.Proxy(); ok && pc.IsEnabled() {
 		req.URL = pc.BuildUrl(req.URL)
+		req.Host = req.URL.Host
 	}
 	tc, _ := ctrl.Timeout()
 	resp, err, statusFlags := w.exchange(tc, req)

@@ -11,6 +11,7 @@ type Proxy interface {
 	IsEnabled() bool
 	Enable()
 	Disable()
+	Pattern() string
 	SetPattern(pattern string)
 	BuildUrl(uri *url.URL) *url.URL
 }
@@ -20,8 +21,8 @@ type ProxyConfig struct {
 	Pattern string
 }
 
-func NewProxyConfig(pattern string) *ProxyConfig {
-	return &ProxyConfig{Enabled: false, Pattern: pattern}
+func NewProxyConfig(enabled bool, pattern string) *ProxyConfig {
+	return &ProxyConfig{Enabled: enabled, Pattern: pattern}
 }
 
 type proxy struct {
@@ -42,9 +43,9 @@ func newProxy(name string, table *table, config *ProxyConfig) *proxy {
 	t.table = table
 	t.name = name
 	if config != nil {
+		t.enabled = config.Enabled
 		t.pattern = config.Pattern
 	}
-	t.enabled = false
 	return t
 }
 
@@ -77,6 +78,10 @@ func (p *proxy) Enable() {
 		return
 	}
 	p.table.enableProxy(p.name, true)
+}
+
+func (p *proxy) Pattern() string {
+	return p.pattern
 }
 
 func (p *proxy) SetPattern(pattern string) {
