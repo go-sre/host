@@ -34,7 +34,7 @@ func Write[O OutputHandler, F accessdata.Formatter](entry *accessdata.Entry) {
 
 [Controller][controllerpkg] provides resiliency through the implementation of configurable timeouts, rate limiting, retries, failover, and proxy controllers.
 The controllers can be applied to any ingress or egress http traffic, and support initialization through external configuration files. All attributes 
-related to the application of the controllers to traffic are logged via [Accessevents.log][accessevents-logging]. Non-http calls, like database client calls, can also 
+related to the application of the controllers to traffic are logged via AccessLog. Non-http calls, like database client calls, can also 
 be configured for resiliency.
 
 ## messaging
