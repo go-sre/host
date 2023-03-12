@@ -32,9 +32,9 @@ func Write[O OutputHandler, F accessdata.Formatter](entry *accessdata.Entry) {
 
 ## controller
 
-[Controller][controllerpkg] provides resiliency through the implementation of configurable timeouts, rate limiting, retries, and failover controllers.
+[Controller][controllerpkg] provides resiliency through the implementation of configurable timeouts, rate limiting, retries, failover, and proxy controllers.
 The controllers can be applied to any ingress or egress http traffic, and support initialization through external configuration files. All attributes 
-related to the application of the controllers to traffic are logged via [Accessevents.log][accessevents-logging]. Non-http calls, like database client calls, can also 
+related to the application of the controllers to traffic are logged via AccessLog. Non-http calls, like database client calls, can also 
 be configured for resiliency.
 
 ## messaging
@@ -59,11 +59,16 @@ func Startup[E template.ErrorHandler, O template.OutputHandler](duration time.Du
 [Middleware][middlewarepkg] provides implementations of a http.Handler and http.RoundTripper that support ingress and egress logging. Options
 available allow configuring a logging function.
 
-Ingress logging implementation: 
+Ingress logging implementations: 
 
 ~~~
-// HttpHostMetricsHandler - http handler that captures metrics about an ingress request, also logs an access entry.
-func HttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+// AccessHttpHostMetricsHandler - http handler that captures metrics about an ingress request, also logs an access entry.
+func AccessHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+    // implementation details
+}
+
+// ControllerHttpHostMetricsHandler - handler that applies controller controllers
+func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
     // implementation details
 }
 ~~~
@@ -71,22 +76,40 @@ func HttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
 Egress logging implementation:
 
 ~~~
-// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
-func (w *wrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+
+// AccessLogWrapTransport - provides a RoundTrip wrapper that applies controller controllers
+func AccessLogWrapTransport(client *http.Client) {
    // implementation details
 }
+
+// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
+func (w *accessWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+   // implementation details
+}
+
+// ControllerWrapTransport - provides a RoundTrip wrapper that applies controller controllers
+func ControllerWrapTransport(client *http.Client) {
+   // implementation details
+}
+
+// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
+func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+   // implementation details
+}
+
 ~~~
 
 Configuration of a logging function is supported via an option, which can be used to change the default:
 
 ~~~
-// SetLogFn - allows setting an application configured logging function
-func SetLogFn(fn func(e *data.Entry)) {
-// implementation details
+
+// AccessSetLogFn - allows setting an application configured logging function
+func AccessSetLogFn(fn func(e *data.Entry)) {
+    // implementation details
 }
 
-var defaultLogFn = func(e *data.Entry) {
-	log.Write[log.LogOutputHandler, data.JsonFormatter](e)
+var defaultLogFn = func(e *accessdata.Entry) {
+	accesslog.Write[accesslog.LogOutputHandler, accessdata.JsonFormatter](e)
 }
 ~~~
 
