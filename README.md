@@ -87,8 +87,8 @@ func (w *accessWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
    // implementation details
 }
 
-// ControllerHttpHostMetricsHandler - handler that applies controller controllers
-func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+// ControllerWrapTransport - provides a RoundTrip wrapper that applies controller controllers
+func ControllerWrapTransport(client *http.Client) {
    // implementation details
 }
 
