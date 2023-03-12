@@ -32,7 +32,7 @@ func Write[O OutputHandler, F accessdata.Formatter](entry *accessdata.Entry) {
 
 ## controller
 
-[Controller][controllerpkg] provides resiliency through the implementation of configurable timeouts, rate limiting, retries, and failover controllers.
+[Controller][controllerpkg] provides resiliency through the implementation of configurable timeouts, rate limiting, retries, failover, and proxy controllers.
 The controllers can be applied to any ingress or egress http traffic, and support initialization through external configuration files. All attributes 
 related to the application of the controllers to traffic are logged via [Accessevents.log][accessevents-logging]. Non-http calls, like database client calls, can also 
 be configured for resiliency.
@@ -59,11 +59,16 @@ func Startup[E template.ErrorHandler, O template.OutputHandler](duration time.Du
 [Middleware][middlewarepkg] provides implementations of a http.Handler and http.RoundTripper that support ingress and egress logging. Options
 available allow configuring a logging function.
 
-Ingress logging implementation: 
+Ingress logging implementations: 
 
 ~~~
-// HttpHostMetricsHandler - http handler that captures metrics about an ingress request, also logs an access entry.
-func HttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+// AccessHttpHostMetricsHandler - http handler that captures metrics about an ingress request, also logs an access entry.
+func AccessHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
+    // implementation details
+}
+
+// ControllerHttpHostMetricsHandler - handler that applies controller controllers
+func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Handler {
     // implementation details
 }
 ~~~
