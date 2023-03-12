@@ -12,6 +12,7 @@ type controllerWrapper struct {
 	rt http.RoundTripper
 }
 
+// RoundTrip - implementation of the RoundTrip interface for a transport, also logs an access entry
 func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
 	var start = time.Now().UTC()
 	var retry = false
