@@ -1,4 +1,4 @@
-# go-templates/host
+# host
 
 
 
