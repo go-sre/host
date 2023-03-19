@@ -7,6 +7,44 @@ import (
 	"sync"
 )
 
+// Configuration - configuration for actuators
+type Configuration interface {
+	SetHttpMatcher(fn HttpMatcher)
+	SetUriMatcher(fn UriMatcher)
+	SetDefaultController(route Route) []error
+	SetHostController(route Route) []error
+	AddController(route Route) []error
+}
+
+// Controllers - public interface
+type Controllers interface {
+	Host() Controller
+	Default() Controller
+	LookupHttp(req *http.Request) Controller
+	LookupUri(urn string, method string) Controller
+	LookupByName(name string) Controller
+}
+
+// Table - controller table
+type Table interface {
+	Configuration
+	Controllers
+}
+
+// IngressTable - table for ingress controllers
+var ingressTable = NewIngressTable()
+
+func IngressTable() Table {
+	return ingressTable
+}
+
+// EgressTable - table for egress controllers
+var egressTable = NewEgressTable()
+
+func EgressTable() Table {
+	return egressTable
+}
+
 type table struct {
 	egress       bool
 	allowDefault bool

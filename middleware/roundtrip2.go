@@ -21,7 +21,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 	if w == nil || w.rt == nil {
 		return nil, errors.New("invalid handler round tripper configuration : http.RoundTripper is nil")
 	}
-	ctrl := controller.EgressTable.LookupHttp(req)
+	ctrl := controller.EgressTable().LookupHttp(req)
 	ctrl.UpdateHeaders(req)
 	if rlc, ok := ctrl.RateLimiter(); ok && !rlc.Allow() {
 		resp := &http.Response{Request: req, StatusCode: rlc.StatusCode()}

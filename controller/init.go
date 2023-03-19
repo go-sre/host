@@ -42,9 +42,9 @@ func AddEgressRoutes(buf []byte) ([]Route, []error) {
 	for _, r := range routes {
 		switch r.Name {
 		case DefaultEgressRouteName:
-			errs = EgressTable.SetDefaultController(r)
+			errs = EgressTable().SetDefaultController(r)
 		default:
-			errs = EgressTable.AddController(r)
+			errs = EgressTable().AddController(r)
 		}
 		if len(errs) > 0 {
 			return nil, errs
@@ -63,11 +63,11 @@ func AddIngressRoutes(buf []byte) ([]Route, []error) {
 	for _, r := range routes {
 		switch r.Name {
 		case HostControllerName:
-			errs = IngressTable.SetHostController(r)
+			errs = IngressTable().SetHostController(r)
 		case DefaultIngressRouteName:
-			errs = IngressTable.SetDefaultController(r)
+			errs = IngressTable().SetDefaultController(r)
 		default:
-			errs = IngressTable.AddController(r)
+			errs = IngressTable().AddController(r)
 		}
 		if len(errs) > 0 {
 			return nil, errs

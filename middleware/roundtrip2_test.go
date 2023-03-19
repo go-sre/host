@@ -77,7 +77,7 @@ func testHttpLog(traffic string, start time.Time, duration time.Duration, req *h
 }
 
 func init() {
-	controller.EgressTable.SetHttpMatcher(func(req *http.Request) (string, bool) {
+	controller.EgressTable().SetHttpMatcher(func(req *http.Request) (string, bool) {
 		if req == nil {
 			return "", true
 		}
@@ -96,17 +96,17 @@ func init() {
 		return "", true
 	})
 
-	controller.EgressTable.AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504)))
-	controller.EgressTable.AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(2000, 0, 503)))
-	controller.EgressTable.AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504), controller.NewRetryConfig([]int{503, 504}, 0, 0, 0)))
-	controller.EgressTable.AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl)))
+	controller.EgressTable().AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504)))
+	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(2000, 0, 503)))
+	controller.EgressTable().AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504), controller.NewRetryConfig([]int{503, 504}, 0, 0, 0)))
+	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl)))
 
 	controller.SetLogFn(testHttpLog)
 
 }
 
 func Example_Controller_Default_Controller() {
-	act := controller.EgressTable.LookupHttp(nil)
+	act := controller.EgressTable().LookupHttp(nil)
 	fmt.Printf("test: LookupHttp(nil) -> [name:%v]\n", act.Name())
 
 	//Output:
@@ -187,7 +187,7 @@ func Example_Controller_Default_Retry_NotEnabled() {
 		isEnabled2 = true
 		ControllerWrapTransport(nil)
 	}
-	act := controller.EgressTable.LookupByName(retryRoute)
+	act := controller.EgressTable().LookupByName(retryRoute)
 	if act != nil {
 		if c, ok := act.Retry(); ok {
 			c.Disable()
@@ -209,7 +209,7 @@ func Example_Controller_Default_Retry_RateLimited() {
 		isEnabled2 = true
 		ControllerWrapTransport(nil)
 	}
-	act := controller.EgressTable.LookupByName(retryRoute)
+	act := controller.EgressTable().LookupByName(retryRoute)
 	if act != nil {
 		if c, ok := act.Retry(); ok {
 			c.Enable()
@@ -231,7 +231,7 @@ func Example_Controller_Default_Retry() {
 		isEnabled2 = true
 		ControllerWrapTransport(nil)
 	}
-	act := controller.EgressTable.LookupByName(retryRoute)
+	act := controller.EgressTable().LookupByName(retryRoute)
 	if act != nil {
 		if c, ok := act.Retry(); ok {
 			c.Enable()

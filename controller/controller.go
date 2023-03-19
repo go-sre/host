@@ -36,36 +36,6 @@ type Controller interface {
 	t() *controller
 }
 
-// Configuration - configuration for actuators
-type Configuration interface {
-	SetHttpMatcher(fn HttpMatcher)
-	SetUriMatcher(fn UriMatcher)
-	SetDefaultController(route Route) []error
-	SetHostController(route Route) []error
-	AddController(route Route) []error
-}
-
-// Controllers - public interface
-type Controllers interface {
-	Host() Controller
-	Default() Controller
-	LookupHttp(req *http.Request) Controller
-	LookupUri(urn string, method string) Controller
-	LookupByName(name string) Controller
-}
-
-// Table - controller table
-type Table interface {
-	Configuration
-	Controllers
-}
-
-// IngressTable - table for ingress controllers
-var IngressTable = NewIngressTable()
-
-// EgressTable - table for egress controllers
-var EgressTable = NewEgressTable()
-
 type controller struct {
 	name        string
 	ping        bool
