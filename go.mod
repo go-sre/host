@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/google/uuid v1.3.0
-	github.com/gotemplates/core v0.0.0-20230317161920-681c26ee58d8
+	github.com/gotemplates/core v0.0.0-20230319150724-d86d8194e74f
 	golang.org/x/time v0.3.0
 	google.golang.org/grpc v1.53.0
 )
