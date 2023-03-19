@@ -17,10 +17,10 @@ func translateOperator(op Operator) Operator {
 }
 
 func _ExampleOperators() {
-	op := Operators[DurationOperator]
+	op := operators[DurationOperator]
 	fmt.Printf("test: Operator() -> %v\n", op)
 
-	op = Operators[StartTimeOperator]
+	op = operators[StartTimeOperator]
 	fmt.Printf("test: Operator() -> %v\n", op)
 
 	//Output:

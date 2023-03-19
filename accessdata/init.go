@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var Operators = map[string]*Operator{
+var operators = map[string]*Operator{
 	TrafficOperator:        {"traffic", TrafficOperator},
 	StartTimeOperator:      {"start_time", StartTimeOperator},
 	DurationOperator:       {"duration_ms", DurationOperator},
@@ -95,7 +95,7 @@ func createOperator(op Operator) (Operator, error) {
 		}
 		return Operator{Name: op.Name, Value: op.Value}, nil
 	}
-	if op2, ok := Operators[op.Value]; ok {
+	if op2, ok := operators[op.Value]; ok {
 		newOp := Operator{Name: op2.Name, Value: op.Value}
 		if !IsEmpty(op.Name) {
 			newOp.Name = op.Name
