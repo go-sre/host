@@ -6,6 +6,11 @@ import (
 	"strconv"
 )
 
+type Header struct {
+	Name  string
+	Value string
+}
+
 // Proxy - interface for proxy
 type Proxy interface {
 	IsEnabled() bool
@@ -13,16 +18,22 @@ type Proxy interface {
 	Disable()
 	Pattern() string
 	SetPattern(pattern string)
+	Headers() []Header
 	BuildUrl(uri *url.URL) *url.URL
 }
 
 type ProxyConfig struct {
 	Enabled bool
 	Pattern string
+	Headers []Header
 }
 
-func NewProxyConfig(enabled bool, pattern string) *ProxyConfig {
-	return &ProxyConfig{Enabled: enabled, Pattern: pattern}
+func NewProxyConfig(enabled bool, pattern string, headers []Header) *ProxyConfig {
+	p := new(ProxyConfig)
+	p.Enabled = enabled
+	p.Pattern = pattern
+	p.Headers = headers
+	return p
 }
 
 type proxy struct {
@@ -30,6 +41,7 @@ type proxy struct {
 	name    string
 	enabled bool
 	pattern string
+	headers []Header
 }
 
 func cloneProxy(curr *proxy) *proxy {
@@ -45,6 +57,7 @@ func newProxy(name string, table *table, config *ProxyConfig) *proxy {
 	if config != nil {
 		t.enabled = config.Enabled
 		t.pattern = config.Pattern
+		t.headers = config.Headers
 	}
 	return t
 }
@@ -82,6 +95,10 @@ func (p *proxy) Enable() {
 
 func (p *proxy) Pattern() string {
 	return p.pattern
+}
+
+func (p *proxy) Headers() []Header {
+	return p.headers
 }
 
 func (p *proxy) SetPattern(pattern string) {

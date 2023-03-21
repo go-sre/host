@@ -99,7 +99,7 @@ func init() {
 	controller.EgressTable().AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504)))
 	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(2000, 0, 503)))
 	controller.EgressTable().AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(time.Millisecond, 504), controller.NewRetryConfig([]int{503, 504}, 0, 0, 0)))
-	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl)))
+	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl, nil)))
 
 	controller.SetLogFn(testHttpLog)
 

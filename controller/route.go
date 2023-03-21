@@ -38,7 +38,7 @@ type RouteConfig struct {
 	Pattern     string
 	Traffic     string // Egress/Ingress
 	Ping        bool   // Health traffic
-	Protocol    string // gRPC, HTTP10, HTTP11, HTTP2, HTTP3gRPC, HTTP
+	Protocol    string // gRPC, HTTP10, HTTP11, HTTP2, HTTP3
 	Timeout     *TimeoutConfigJson
 	RateLimiter *RateLimiterConfig
 	Retry       *RetryConfigJson

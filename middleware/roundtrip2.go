@@ -33,6 +33,9 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 		if req.URL != nil {
 			req.Host = req.URL.Host
 		}
+		for _, header := range pc.Headers() {
+			req.Header.Add(header.Name, header.Value)
+		}
 	}
 	tc, _ := ctrl.Timeout()
 	resp, err, statusFlags := w.exchange(tc, req)

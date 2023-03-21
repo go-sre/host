@@ -7,10 +7,10 @@ import (
 
 func Example_newProxy() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080"))
-	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.pattern)
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", []Header{{"name", "value"}, {"name2", "value2"}}))
+	fmt.Printf("test: newProxy() -> [name:%v] [current:%v] [headers:%v]\n", p.name, p.pattern, p.headers)
 
-	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com"))
+	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil))
 	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.pattern)
 
 	p2 := cloneProxy(p)
@@ -18,7 +18,7 @@ func Example_newProxy() {
 	fmt.Printf("test: cloneProxy() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", p.pattern, p.name, p2.pattern, p2.name)
 
 	//Output:
-	//test: newProxy() -> [name:test-route] [current:http://localhost:8080]
+	//test: newProxy() -> [name:test-route] [current:http://localhost:8080] [headers:[{name value} {name2 value2}]]
 	//test: newProxy() -> [name:test-route2] [current:https://google.com]
 	//test: cloneProxy() -> [prev-config:https://google.com] [prev-name:test-route2] [curr-config:urn:test] [curr-name:test-route2]
 
@@ -27,22 +27,22 @@ func Example_newProxy() {
 func ExampleProxy_BuildUrl() {
 	t := newTable(true, false)
 	uri, _ := url.Parse("https://localhost:8080/basePath/resource?first=false")
-	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:"))
+	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:", nil))
 
 	fmt.Printf("test: InputUrl() -> %v\n", uri.String())
 
 	uri2 := c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com"))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com", nil))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search"))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search", nil))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test"))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test", nil))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
 
@@ -56,7 +56,7 @@ func ExampleProxy_BuildUrl() {
 
 func Example_Proxy_State() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080"))
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil))
 
 	m := make(map[string]string, 16)
 	proxyState(m, nil)
@@ -73,7 +73,7 @@ func Example_Proxy_State() {
 
 func Example_Proxy_SetPattern() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080")
+	config := NewProxyConfig(false, "http://localhost:8080", nil)
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
@@ -98,7 +98,7 @@ func Example_Proxy_SetPattern() {
 
 func Example_Proxy_Enable() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080")
+	config := NewProxyConfig(false, "http://localhost:8080", nil)
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
