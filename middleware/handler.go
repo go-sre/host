@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/felixge/httpsnoop"
-	"github.com/gotemplates/host/accessdata"
+	"github.com/go-sre/host/accessdata"
 	"net/http"
 	"time"
 )

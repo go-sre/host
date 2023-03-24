@@ -2,7 +2,7 @@ package messaging
 
 import (
 	"context"
-	"github.com/gotemplates/core/runtime"
+	"github.com/go-sre/core/runtime"
 )
 
 // ContentMap - slice of any content to be included in a message

@@ -2,7 +2,7 @@ package messaging
 
 import (
 	"fmt"
-	"github.com/gotemplates/core/runtime"
+	"github.com/go-sre/core/runtime"
 	"net/http"
 )
 

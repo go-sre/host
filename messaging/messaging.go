@@ -1,7 +1,7 @@
 package messaging
 
 import (
-	"github.com/gotemplates/core/runtime"
+	"github.com/go-sre/core/runtime"
 )
 
 const (

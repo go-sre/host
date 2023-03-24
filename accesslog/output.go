@@ -2,7 +2,7 @@ package accesslog
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/accessdata"
+	"github.com/go-sre/host/accessdata"
 	"log"
 )
 

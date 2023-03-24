@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/gotemplates/host/controller"
+	"github.com/go-sre/host/controller"
 	"net/http"
 	"time"
 )

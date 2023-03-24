@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/accessdata"
-	"github.com/gotemplates/host/accesslog"
+	"github.com/go-sre/host/accessdata"
+	"github.com/go-sre/host/accesslog"
 	"net/http"
 )
 

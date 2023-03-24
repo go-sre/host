@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"errors"
-	"github.com/gotemplates/host/accessdata"
+	"github.com/go-sre/host/accessdata"
 	"net/http"
 	"time"
 )

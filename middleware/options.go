@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/gotemplates/host/accessdata"
-	"github.com/gotemplates/host/accesslog"
+	"github.com/go-sre/host/accessdata"
+	"github.com/go-sre/host/accesslog"
 )
 
 // SetAccessLogFn - allows setting an application configured logging function

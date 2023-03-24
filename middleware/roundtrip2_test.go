@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/controller"
+	"github.com/go-sre/host/controller"
 	"net/http"
 	"time"
 )

@@ -2,7 +2,7 @@ package runtime_test
 
 import (
 	"fmt"
-	"github.com/gotemplates/host/runtime"
+	"github.com/go-sre/host/runtime"
 )
 
 func ExampleDevEnv() {

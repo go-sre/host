@@ -3,7 +3,7 @@ package accesslog
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gotemplates/host/accessdata"
+	"github.com/go-sre/host/accessdata"
 )
 
 // InitIngressOperators - allows configuration of access accesslog attributes for ingress traffic
