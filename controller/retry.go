@@ -15,6 +15,7 @@ import (
 
 // Retry - interface for retries
 type Retry interface {
+	Actuator
 	IsEnabled() bool
 	Enable()
 	Disable()
@@ -102,6 +103,8 @@ func retryState(m map[string]string, r *retry, retried bool) map[string]string {
 	return m
 
 }
+
+func (r *retry) Signal(opCode, value string) error { return nil }
 
 func (r *retry) IsEnabled() bool { return r.enabled }
 

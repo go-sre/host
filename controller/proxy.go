@@ -13,6 +13,7 @@ type Header struct {
 
 // Proxy - interface for proxy
 type Proxy interface {
+	Actuator
 	IsEnabled() bool
 	Enable()
 	Disable()
@@ -76,6 +77,8 @@ func proxyState(m map[string]string, p *proxy) {
 		m[ProxyName] = strconv.FormatBool(p.IsEnabled())
 	}
 }
+
+func (p *proxy) Signal(opCode, value string) error { return nil }
 
 func (p *proxy) IsEnabled() bool { return p.enabled }
 

@@ -16,6 +16,7 @@ const (
 
 // RateLimiter - interface for rate limiting
 type RateLimiter interface {
+	Actuator
 	Allow() bool
 	StatusCode() int
 	SetLimit(limit rate.Limit)
@@ -105,6 +106,8 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 	m[RateBurstName] = strconv.Itoa(burst)
 	return m
 }
+
+func (r *rateLimiter) Signal(opCode, value string) error { return nil }
 
 func (r *rateLimiter) Allow() bool {
 	if r.config.Limit == rate.Inf {

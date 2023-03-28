@@ -9,6 +9,7 @@ import (
 
 // Timeout - interface for timeouts
 type Timeout interface {
+	Actuator
 	Duration() time.Duration
 	SetTimeout(timeout time.Duration)
 	StatusCode() int
@@ -64,6 +65,8 @@ func timeoutState(m map[string]string, t *timeout) {
 	}
 	m[TimeoutName] = strconv.Itoa(int(val))
 }
+
+func (t *timeout) Signal(_, _ string) error { return errors.New("timeout Actuator not supported") }
 
 func (t *timeout) Duration() time.Duration {
 	if t.config.Duration <= 0 {

@@ -13,7 +13,7 @@ type Route struct {
 	Pattern     string
 	Traffic     string // egress/ingress
 	Ping        bool   // health traffic
-	Protocol    string // gRPC, HTTP10, HTTP11, HTTP2, HTTP3gRPC, HTTP
+	Protocol    string // gRPC, HTTP10, HTTP11, HTTP2, HTTP3
 	Timeout     *TimeoutConfig
 	RateLimiter *RateLimiterConfig
 	Retry       *RetryConfig

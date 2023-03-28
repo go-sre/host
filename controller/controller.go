@@ -29,6 +29,7 @@ type Controller interface {
 	Retry() (Retry, bool)
 	Failover() (Failover, bool)
 	Proxy() (Proxy, bool)
+	Signal(behavior, opCode, value string) error
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
 	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool)
@@ -175,6 +176,10 @@ func (c *controller) Proxy() (Proxy, bool) {
 		return nil, false
 	}
 	return c.proxy, true
+}
+
+func (c *controller) Signal(behavior, opCode, value string) error {
+	return nil
 }
 
 func (c *controller) t() *controller {

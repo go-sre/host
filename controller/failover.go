@@ -9,6 +9,7 @@ type FailoverInvoke func(name string, failover bool)
 
 // Failover - interface for failover
 type Failover interface {
+	Actuator
 	IsEnabled() bool
 	Enable()
 	Disable()
@@ -62,6 +63,8 @@ func failoverState(m map[string]string, f *failover) {
 		m[FailoverName] = strconv.FormatBool(f.IsEnabled())
 	}
 }
+
+func (f *failover) Signal(opCode, value string) error { return nil }
 
 func (f *failover) IsEnabled() bool { return f.enabled }
 
