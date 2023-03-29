@@ -86,14 +86,14 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 	route.Proxy = config.Proxy
 	route.RateLimiter = config.RateLimiter
 	if config.Timeout != nil {
-		duration, err := ConvertDuration(config.Timeout.Duration)
+		duration, err := ParseDuration(config.Timeout.Duration)
 		if err != nil {
 			return Route{}, err
 		}
 		route.Timeout = NewTimeoutConfig(duration, config.Timeout.StatusCode)
 	}
 	if config.Retry != nil {
-		duration, err := ConvertDuration(config.Retry.Wait)
+		duration, err := ParseDuration(config.Retry.Wait)
 		if err != nil {
 			return Route{}, err
 		}

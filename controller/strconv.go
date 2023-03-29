@@ -54,7 +54,7 @@ func ExtractState(state, name string) string {
 	return ""
 }
 
-func ConvertDuration(s string) (time.Duration, error) {
+func ParseDuration(s string) (time.Duration, error) {
 	if s == "" {
 		return 0, nil
 	}
