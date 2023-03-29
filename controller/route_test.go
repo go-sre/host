@@ -82,7 +82,7 @@ func ExampleConfig_Marshal() {
 
 	//Output:
 	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Duration":20000,"StatusCode":504},"RateLimiter":{"Limit":100,"Burst":25,"StatusCode":503},"Retry":{"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null,"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null}}
-	
+
 }
 
 func ExampleNewRouteFromConfig() {

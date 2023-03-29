@@ -75,6 +75,7 @@ func AddIngressRoutes(buf []byte) ([]Route, []error) {
 	}
 	return routes, nil
 }
+
 func InitEgressControllers(read func() ([]byte, error), update func(routes []Route) error) []error {
 	if read == nil || update == nil {
 		return []error{errors.New("invalid argument: read or updater function is nil")}
@@ -111,4 +112,20 @@ func InitIngressControllers(read func() ([]byte, error), update func(routes []Ro
 		return []error{err}
 	}
 	return nil
+}
+
+func IngressSetHttpMatcher(fn HttpMatcher) {
+	IngressTable().SetHttpMatcher(fn)
+}
+
+func IngressSetUriMatcher(fn UriMatcher) {
+	IngressTable().SetUriMatcher(fn)
+}
+
+func EgressSetHttpMatcher(fn HttpMatcher) {
+	EgressTable().SetHttpMatcher(fn)
+}
+
+func EgressSetUriMatcher(fn UriMatcher) {
+	EgressTable().SetUriMatcher(fn)
 }
