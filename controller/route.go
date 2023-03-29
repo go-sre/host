@@ -2,9 +2,6 @@ package controller
 
 import (
 	"golang.org/x/time/rate"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // Route - route data
@@ -107,44 +104,4 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 
 func (r Route) IsConfigured() bool {
 	return r.Retry != nil || r.Timeout != nil || r.RateLimiter != nil || r.Failover != nil || r.Proxy != nil
-}
-
-func ConvertDuration(s string) (time.Duration, error) {
-	if s == "" {
-		return 0, nil
-	}
-	tokens := strings.Split(s, "ms")
-	if len(tokens) == 2 {
-		val, err := strconv.Atoi(tokens[0])
-		if err != nil {
-			return 0, err
-		}
-		return time.Duration(val) * time.Millisecond, nil
-	}
-	tokens = strings.Split(s, "µs")
-	if len(tokens) == 2 {
-		val, err := strconv.Atoi(tokens[0])
-		if err != nil {
-			return 0, err
-		}
-		return time.Duration(val) * time.Microsecond, nil
-	}
-	tokens = strings.Split(s, "m")
-	if len(tokens) == 2 {
-		val, err := strconv.Atoi(tokens[0])
-		if err != nil {
-			return 0, err
-		}
-		return time.Duration(val) * time.Minute, nil
-	}
-	// Assume seconds
-	tokens = strings.Split(s, "s")
-	if len(tokens) == 2 {
-		s = tokens[0]
-	}
-	val, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, err
-	}
-	return time.Duration(val) * time.Second, nil
 }
