@@ -3,28 +3,31 @@ package controller
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 )
 
 // Timeout - interface for timeouts
 type Timeout interface {
+	State
 	Actuator
+	StatusCode() int
 	Duration() time.Duration
 	SetTimeout(timeout time.Duration)
-	StatusCode() int
 }
 
 type TimeoutConfig struct {
-	Duration   time.Duration
+	Disabled   bool
 	StatusCode int
+	Duration   time.Duration
 }
 
-func NewTimeoutConfig(duration time.Duration, statusCode int) *TimeoutConfig {
+func NewTimeoutConfig(enabled bool, statusCode int, duration time.Duration) *TimeoutConfig {
 	if statusCode <= 0 {
 		statusCode = http.StatusGatewayTimeout
 	}
-	return &TimeoutConfig{Duration: duration, StatusCode: statusCode}
+	return &TimeoutConfig{Disabled: !enabled, StatusCode: statusCode, Duration: duration}
 }
 
 type timeout struct {
@@ -66,7 +69,29 @@ func timeoutState(m map[string]string, t *timeout) {
 	m[TimeoutName] = strconv.Itoa(int(val))
 }
 
-func (t *timeout) Signal(_, _ string) error { return errors.New("timeout Actuator not supported") }
+func (t *timeout) Signal(_ url.Values) error { return errors.New("timeout Actuator not supported") }
+
+func (t *timeout) IsEnabled() bool { return !t.config.Disabled }
+
+func (t *timeout) Enable() {
+	if t.IsEnabled() {
+		return
+	}
+	t.config.Disabled = false
+	// Need to update table
+}
+
+func (t *timeout) Disable() {
+	if !t.IsEnabled() {
+		return
+	}
+	t.config.Disabled = true
+	// Need to update table
+}
+
+func (t *timeout) StatusCode() int {
+	return t.config.StatusCode
+}
 
 func (t *timeout) Duration() time.Duration {
 	if t.config.Duration <= 0 {
@@ -80,8 +105,4 @@ func (t *timeout) SetTimeout(duration time.Duration) {
 		return
 	}
 	t.table.setTimeout(t.name, duration)
-}
-
-func (t *timeout) StatusCode() int {
-	return t.config.StatusCode
 }

@@ -6,6 +6,7 @@ import (
 	"golang.org/x/time/rate"
 	"math"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -16,6 +17,7 @@ const (
 
 // RateLimiter - interface for rate limiting
 type RateLimiter interface {
+	State
 	Actuator
 	Allow() bool
 	StatusCode() int
@@ -27,12 +29,13 @@ type RateLimiter interface {
 }
 
 type RateLimiterConfig struct {
+	Disabled   bool
+	StatusCode int
 	Limit      rate.Limit
 	Burst      int
-	StatusCode int
 }
 
-func NewRateLimiterConfig(limit rate.Limit, burst int, statusCode int) *RateLimiterConfig {
+func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst int) *RateLimiterConfig {
 	//validateLimiter(&limit, &burst)
 	c := new(RateLimiterConfig)
 	c.Limit = limit
@@ -41,6 +44,7 @@ func NewRateLimiterConfig(limit rate.Limit, burst int, statusCode int) *RateLimi
 		statusCode = http.StatusTooManyRequests
 	}
 	c.StatusCode = statusCode
+	c.Disabled = !enabled
 	return c
 }
 
@@ -107,7 +111,25 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 	return m
 }
 
-func (r *rateLimiter) Signal(opCode, value string) error { return nil }
+func (r *rateLimiter) IsEnabled() bool { return !r.config.Disabled }
+
+func (r *rateLimiter) Enable() {
+	if r.IsEnabled() {
+		return
+	}
+	r.config.Disabled = false
+	// Need to update table
+}
+
+func (r *rateLimiter) Disable() {
+	if !r.IsEnabled() {
+		return
+	}
+	r.config.Disabled = true
+	// Need to update table
+}
+
+func (r *rateLimiter) Signal(values url.Values) error { return nil }
 
 func (r *rateLimiter) Allow() bool {
 	if r.config.Limit == rate.Inf {

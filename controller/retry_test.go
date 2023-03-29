@@ -6,23 +6,23 @@ import (
 )
 
 func Example_newRetry() {
-	t := newRetry("test-route", newTable(true, false), NewRetryConfig([]int{504}, 5, 10, 0))
+	t := newRetry("test-route", newTable(true, false), NewRetryConfig(false, 5, 10, 0, []int{504}))
 	limit, burst := t.LimitAndBurst()
 	fmt.Printf("test: newRetry() -> [name:%v] [config:%v] [limit:%v] [burst:%v]\n", t.name, t.config, limit, burst)
 
-	t = newRetry("test-route2", newTable(true, false), NewRetryConfig([]int{503, 504}, 2, 20, 0))
+	t = newRetry("test-route2", newTable(true, false), NewRetryConfig(false, 2, 20, 0, []int{503, 504}))
 	fmt.Printf("test: newRetry() -> [name:%v] [config:%v]\n", t.name, t.config)
 
 	t2 := cloneRetry(t)
-	t2.enabled = false
-	fmt.Printf("test: cloneRetry() -> [prev-enabled:%v] [curr-enabled:%v]\n", t.enabled, t2.enabled)
+	t2.Enable()
+	fmt.Printf("test: cloneRetry() -> [prev-enabled:%v] [curr-enabled:%v]\n", t.IsEnabled(), t2.IsEnabled())
 
 	//t = newRetry("test-route3", newTable(true), NewRetryConfig([]int{503, 504}, time.Millisecond*2000, false))
 	fmt.Printf("test: retryState(nil,false,map) -> %v\n", retryState(nil, nil, false))
 
 	fmt.Printf("test: retryState(t,false,map) -> %v\n", retryState(nil, t, false))
 
-	t2 = newRetry("test-route", newTable(true, false), NewRetryConfig([]int{504}, rate.Inf, 10, 0))
+	t2 = newRetry("test-route", newTable(true, false), NewRetryConfig(false, rate.Inf, 10, 0, []int{504}))
 	fmt.Printf("test: retryState(t2,true,map) -> %v\n", retryState(nil, t2, true))
 
 	//Output:
@@ -37,7 +37,7 @@ func Example_newRetry() {
 
 func Example_Status() {
 	name := "test-route"
-	config := NewRetryConfig([]int{504}, 5, 10, 0)
+	config := NewRetryConfig(true, 5, 10, 0, []int{504})
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
@@ -66,7 +66,7 @@ func Example_Status() {
 
 func Example_IsRetryable_Disabled() {
 	name := "test-route"
-	config := NewRetryConfig([]int{503, 504}, 100, 10, 0)
+	config := NewRetryConfig(false, 100, 10, 0, []int{503, 504})
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
@@ -93,7 +93,7 @@ func Example_IsRetryable_Disabled() {
 
 func Example_IsRetryable_StatusCode() {
 	name := "test-route"
-	config := NewRetryConfig([]int{503, 504}, 100, 10, 0)
+	config := NewRetryConfig(false, 100, 10, 0, []int{503, 504})
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
@@ -132,7 +132,7 @@ func Example_IsRetryable_StatusCode() {
 
 func Example_IsRetryable_RateLimit() {
 	name := "test-route"
-	config := NewRetryConfig([]int{503, 504}, 1, 1, 0)
+	config := NewRetryConfig(false, 1, 1, 0, []int{503, 504})
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())

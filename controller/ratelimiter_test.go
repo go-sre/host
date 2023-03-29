@@ -6,11 +6,11 @@ import (
 )
 
 func Example_newRateLimiter() {
-	t := newRateLimiter("test-route", newTable(true, false), NewRateLimiterConfig(1, 100, 503))
+	t := newRateLimiter("test-route", newTable(true, false), NewRateLimiterConfig(true, 503, 1, 100))
 	limit, burst := t.LimitAndBurst()
 	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [statusCode:%v]\n", t.name, limit, burst, t.StatusCode())
 
-	t = newRateLimiter("test-route2", newTable(true, false), NewRateLimiterConfig(rate.Inf, DefaultBurst, 429))
+	t = newRateLimiter("test-route2", newTable(true, false), NewRateLimiterConfig(true, 429, rate.Inf, DefaultBurst))
 	limit, burst = t.LimitAndBurst()
 	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [statusCode:%v]\n", t.name, limit, burst, t.StatusCode())
 
@@ -58,7 +58,7 @@ func Example_RateLimiter_Status() {
 
 func Example_RateLimiter_Set() {
 	name := "test-route"
-	config := NewRateLimiterConfig(10, 100, 503)
+	config := NewRateLimiterConfig(true, 503, 10, 100)
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
@@ -84,7 +84,7 @@ func Example_RateLimiter_Set() {
 
 func Example_RateLimiter_Adjust() {
 	name := "test-route"
-	config := NewRateLimiterConfig(10, 1, 503)
+	config := NewRateLimiterConfig(true, 503, 10, 1)
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())

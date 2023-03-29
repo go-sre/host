@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"net/url"
 	"strconv"
 )
 
@@ -9,10 +10,8 @@ type FailoverInvoke func(name string, failover bool)
 
 // Failover - interface for failover
 type Failover interface {
+	State
 	Actuator
-	IsEnabled() bool
-	Enable()
-	Disable()
 	Invoke(failover bool)
 }
 
@@ -64,22 +63,24 @@ func failoverState(m map[string]string, f *failover) {
 	}
 }
 
-func (f *failover) Signal(opCode, value string) error { return nil }
+func (f *failover) Signal(values url.Values) error { return nil }
 
 func (f *failover) IsEnabled() bool { return f.enabled }
-
-func (f *failover) Disable() {
-	if !f.IsEnabled() {
-		return
-	}
-	f.table.enableFailover(f.name, false)
-}
 
 func (f *failover) Enable() {
 	if f.IsEnabled() {
 		return
 	}
+	f.enabled = true
 	f.table.enableFailover(f.name, true)
+}
+
+func (f *failover) Disable() {
+	if !f.IsEnabled() {
+		return
+	}
+	f.enabled = false
+	f.table.enableFailover(f.name, false)
 }
 
 func (f *failover) Invoke(failover bool) {

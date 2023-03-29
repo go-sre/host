@@ -19,15 +19,17 @@ type Route struct {
 }
 
 type TimeoutConfigJson struct {
-	Duration   string
+	Disabled   bool
 	StatusCode int
+	Duration   string
 }
 
 type RetryConfigJson struct {
-	Limit rate.Limit
-	Burst int
-	Wait  string
-	Codes []int
+	Enabled bool
+	Limit   rate.Limit
+	Burst   int
+	Wait    string
+	Codes   []int
 }
 
 type RouteConfig struct {
@@ -90,14 +92,14 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 		if err != nil {
 			return Route{}, err
 		}
-		route.Timeout = NewTimeoutConfig(duration, config.Timeout.StatusCode)
+		route.Timeout = NewTimeoutConfig(!config.Timeout.Disabled, config.Timeout.StatusCode, duration)
 	}
 	if config.Retry != nil {
 		duration, err := ParseDuration(config.Retry.Wait)
 		if err != nil {
 			return Route{}, err
 		}
-		route.Retry = NewRetryConfig(config.Retry.Codes, config.Retry.Limit, config.Retry.Burst, duration)
+		route.Retry = NewRetryConfig(config.Retry.Enabled, config.Retry.Limit, config.Retry.Burst, duration, config.Retry.Codes)
 	}
 	return route, nil
 }

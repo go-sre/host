@@ -163,7 +163,11 @@ func (t *table) enableRetry(name string, enabled bool) {
 	defer t.mu.Unlock()
 	if ctrl, ok := t.controllers[name]; ok {
 		c := cloneRetry(ctrl.retry)
-		c.enabled = enabled
+		if enabled {
+			c.Enable()
+		} else {
+			c.Disable()
+		}
 		t.update(name, cloneController[*retry](ctrl, c))
 	}
 }

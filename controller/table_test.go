@@ -52,7 +52,7 @@ func ExampleTable_SetHostController_Egress() {
 	a := t.Host()
 	fmt.Printf("test: Host() -> [name:%v] [timeout-controller:%v]\n", a.Name(), a.t().timeout)
 
-	err := t.SetHostController(newRoute("", NewTimeoutConfig(time.Second, 504)))
+	err := t.SetHostController(newRoute("", NewTimeoutConfig(true, 504, time.Second)))
 	//a = t.Host()
 	fmt.Printf("test: SetHostController(NewTimeoutConfig()) -> %v\n", err)
 
@@ -67,10 +67,10 @@ func ExampleTable_SetHostController_Ingress() {
 	a := t.Host()
 	fmt.Printf("test: Host() -> [name:%v]\n", a.Name())
 
-	err := t.SetHostController(newRoute("", NewTimeoutConfig(time.Second, 503)))
+	err := t.SetHostController(newRoute("", NewTimeoutConfig(true, 503, time.Second)))
 	fmt.Printf("test: SetHostController(newRoute) -> %v\n", err)
 
-	err = t.SetHostController(newRoute("", NewRateLimiterConfig(100, 25, 504)))
+	err = t.SetHostController(newRoute("", NewRateLimiterConfig(true, 504, 100, 25)))
 	fmt.Printf("test: SetHostController(newRoute) -> %v\n", err)
 
 	//Output:
@@ -122,7 +122,7 @@ func ExampleTable_LookupHttp() {
 		return name, true
 	},
 	)
-	ok := t.AddController(newRoute(name, NewTimeoutConfig(100, 503), nil, nil, nil))
+	ok := t.AddController(newRoute(name, NewTimeoutConfig(true, 503, 100), nil, nil, nil))
 	fmt.Printf("test: Add(controller) -> [controller:%v] [count:%v] [exists:%v]\n", ok, t.count(), t.exists(name))
 
 	r = t.LookupHttp(req)
@@ -153,7 +153,7 @@ func ExampleTable_LookupUri() {
 		return name, true
 	},
 	)
-	ok := t.AddController(newRoute(name, NewTimeoutConfig(100, 503), nil, nil, nil))
+	ok := t.AddController(newRoute(name, NewTimeoutConfig(true, 503, 100), nil, nil, nil))
 	fmt.Printf("test: Add(controller) -> [controller:%v] [count:%v] [exists:%v]\n", ok, t.count(), t.exists(name))
 
 	r = t.LookupUri(uri, "")
@@ -192,7 +192,7 @@ func ExampleTable_Add_Ingress() {
 	err := t.AddController(newRoute("valid"))
 	fmt.Printf("test: AddRoute(valid) -> %v\n", err)
 
-	err = t.AddController(newRoute("invalid", NewTimeoutConfig(time.Second, 504)))
+	err = t.AddController(newRoute("invalid", NewTimeoutConfig(true, 504, time.Second)))
 	fmt.Printf("test: AddRoute(invalid) -> %v\n", err)
 
 	//Output:

@@ -6,6 +6,7 @@ import (
 	"golang.org/x/time/rate"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 )
@@ -15,10 +16,8 @@ import (
 
 // Retry - interface for retries
 type Retry interface {
+	State
 	Actuator
-	IsEnabled() bool
-	Enable()
-	Disable()
 	IsRetryable(statusCode int) (ok bool, status string)
 	SetRateLimiter(limit rate.Limit, burst int)
 	AdjustRateLimiter(percentage int) bool
@@ -26,25 +25,26 @@ type Retry interface {
 }
 
 type RetryConfig struct {
-	Limit rate.Limit
-	Burst int
-	Wait  time.Duration
-	Codes []int
+	Enabled bool
+	Limit   rate.Limit
+	Burst   int
+	Wait    time.Duration
+	Codes   []int
 }
 
-func NewRetryConfig(validCodes []int, limit rate.Limit, burst int, wait time.Duration) *RetryConfig {
+func NewRetryConfig(enabled bool, limit rate.Limit, burst int, wait time.Duration, validCodes []int) *RetryConfig {
 	c := new(RetryConfig)
 	c.Wait = wait
 	c.Limit = limit
 	c.Burst = burst
 	c.Codes = validCodes
+	c.Enabled = enabled
 	return c
 }
 
 type retry struct {
 	name        string
 	table       *table
-	enabled     bool
 	rand        *rand.Rand
 	config      RetryConfig
 	rateLimiter *rate.Limiter
@@ -60,7 +60,6 @@ func newRetry(name string, table *table, config *RetryConfig) *retry {
 	t := new(retry)
 	t.name = name
 	t.table = table
-	t.enabled = true
 	t.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	if config != nil {
 		t.config = *config
@@ -104,23 +103,25 @@ func retryState(m map[string]string, r *retry, retried bool) map[string]string {
 
 }
 
-func (r *retry) Signal(opCode, value string) error { return nil }
-
-func (r *retry) IsEnabled() bool { return r.enabled }
-
-func (r *retry) Disable() {
-	if !r.IsEnabled() {
-		return
-	}
-	r.table.enableRetry(r.name, false)
-}
+func (r *retry) IsEnabled() bool { return r.config.Enabled }
 
 func (r *retry) Enable() {
 	if r.IsEnabled() {
 		return
 	}
+	r.config.Enabled = true
 	r.table.enableRetry(r.name, true)
 }
+
+func (r *retry) Disable() {
+	if !r.IsEnabled() {
+		return
+	}
+	r.config.Enabled = false
+	r.table.enableRetry(r.name, false)
+}
+
+func (r *retry) Signal(values url.Values) error { return nil }
 
 func (r *retry) SetRateLimiter(limit rate.Limit, burst int) {
 	if r.config.Limit == limit && r.config.Burst == burst {

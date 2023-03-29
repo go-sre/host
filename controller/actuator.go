@@ -3,19 +3,27 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 )
 
 const (
-	EnableOpCode = "enable"
-	SetOpCode    = "set"
-	IncOpCode    = "inc"
-	DecOpCode    = "dec"
+	TrafficKey    = "traffic"
+	ControllerKey = "controller"
+	PatternKey    = "pattern"
+	MethodKey     = "method"
+
+	ActionKey = "action"
+
+	EnableAction = "enable"
+	SetAction    = "set"
+	IncAction    = "inc"
+	DecAction    = "dec"
 )
 
 type Actuator interface {
-	Signal(opCode, value string) error
+	Signal(values url.Values) error
 }
 
 func boolValue(value string) (bool, error) {
@@ -43,4 +51,8 @@ func urlValue(value string) (*url.URL, error) {
 		return nil, errors.New("value is empty")
 	}
 	return url.Parse(value)
+}
+
+func parseTest(req *http.Request) {
+	req.URL.Query()
 }

@@ -6,10 +6,10 @@ import (
 )
 
 func Example_newTimeout() {
-	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(100, 0))
+	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, 100))
 	fmt.Printf("test: newTimeout() -> [name:%v] [current:%v]\n", t.name, t.config.Duration)
 
-	t = newTimeout("test-route2", newTable(true, false), NewTimeoutConfig(time.Millisecond*2000, 503))
+	t = newTimeout("test-route2", newTable(true, false), NewTimeoutConfig(true, 503, time.Millisecond*2000))
 	fmt.Printf("test: newTimeout() -> [name:%v] [current:%v]\n", t.name, t.config.Duration)
 
 	t2 := cloneTimeout(t)
@@ -19,17 +19,17 @@ func Example_newTimeout() {
 	//Output:
 	//test: newTimeout() -> [name:test-route] [current:100ns]
 	//test: newTimeout() -> [name:test-route2] [current:2s]
-	//test: cloneTimeout() -> [prev-config:{2s 503}] [prev-name:test-route2] [curr-config:{1s 503}] [curr-name:test-route2]
+	//test: cloneTimeout() -> [prev-config:{false 503 2s}] [prev-name:test-route2] [curr-config:{false 503 1s}] [curr-name:test-route2]
 
 }
 
 func Example_Timeout_State() {
-	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(time.Millisecond*2000, 0))
+	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
 
 	d := t.Duration()
 	fmt.Printf("test: Duration() -> [%v]\n", d)
 
-	t = newTimeout("test-route", newTable(true, false), NewTimeoutConfig(time.Millisecond*2000, 0))
+	t = newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
 
 	m := make(map[string]string, 16)
 	timeoutState(m, nil)
@@ -47,7 +47,7 @@ func Example_Timeout_State() {
 
 func Example_Timeout_SetTimeout() {
 	name := "test-route"
-	config := NewTimeoutConfig(time.Millisecond*1500, 0)
+	config := NewTimeoutConfig(true, 0, time.Millisecond*1500)
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))

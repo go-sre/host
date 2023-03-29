@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -21,15 +22,22 @@ const (
 	NotEnabledFlag      = "NE"
 )
 
+// State - defines enabled state
+type State interface {
+	IsEnabled() bool
+	Enable()
+	Disable()
+}
+
 // Controller - definition for properties of a controller
 type Controller interface {
+	Actuator
 	Name() string
 	Timeout() (Timeout, bool)
 	RateLimiter() (RateLimiter, bool)
 	Retry() (Retry, bool)
 	Failover() (Failover, bool)
 	Proxy() (Proxy, bool)
-	Signal(behavior, opCode, value string) error
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
 	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool)
@@ -178,7 +186,7 @@ func (c *controller) Proxy() (Proxy, bool) {
 	return c.proxy, true
 }
 
-func (c *controller) Signal(behavior, opCode, value string) error {
+func (c *controller) Signal(values url.Values) error {
 	return nil
 }
 

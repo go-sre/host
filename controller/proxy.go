@@ -13,10 +13,8 @@ type Header struct {
 
 // Proxy - interface for proxy
 type Proxy interface {
+	State
 	Actuator
-	IsEnabled() bool
-	Enable()
-	Disable()
 	Pattern() string
 	SetPattern(pattern string)
 	Headers() []Header
@@ -78,22 +76,24 @@ func proxyState(m map[string]string, p *proxy) {
 	}
 }
 
-func (p *proxy) Signal(opCode, value string) error { return nil }
+func (p *proxy) Signal(values url.Values) error { return nil }
 
 func (p *proxy) IsEnabled() bool { return p.enabled }
-
-func (p *proxy) Disable() {
-	if !p.IsEnabled() {
-		return
-	}
-	p.table.enableProxy(p.name, false)
-}
 
 func (p *proxy) Enable() {
 	if p.IsEnabled() {
 		return
 	}
+	p.enabled = true
 	p.table.enableProxy(p.name, true)
+}
+
+func (p *proxy) Disable() {
+	if !p.IsEnabled() {
+		return
+	}
+	p.enabled = false
+	p.table.enableProxy(p.name, false)
 }
 
 func (p *proxy) Pattern() string {

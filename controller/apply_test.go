@@ -66,7 +66,7 @@ func ExampleEgressApply_RateLimit() {
 	name := "rate-limit-route"
 	egressTable = NewEgressTable()
 
-	route := NewRoute(name, EgressTraffic, "", false, NewRateLimiterConfig(1, 0, 503))
+	route := NewRoute(name, EgressTraffic, "", false, NewRateLimiterConfig(true, 503, 1, 0))
 	EgressTable().AddController(route)
 	EgressTable().SetUriMatcher(func(uri string, method string) (string, bool) {
 		return name, true
@@ -83,7 +83,7 @@ func ExampleEgressApply_Timeout() {
 	name := "timeout-route"
 	egressTable = NewEgressTable()
 
-	route := NewRoute(name, EgressTraffic, "", false, NewTimeoutConfig(time.Second, 504))
+	route := NewRoute(name, EgressTraffic, "", false, NewTimeoutConfig(true, 504, time.Second))
 	EgressTable().AddController(route)
 	EgressTable().SetUriMatcher(func(uri string, method string) (string, bool) {
 		return name, true

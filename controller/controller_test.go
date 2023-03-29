@@ -8,7 +8,7 @@ import (
 
 func ExampleController_newController() {
 	t := newTable(true, false)
-	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
 
 	ctrl, _ := newController(route, t)
 
@@ -19,7 +19,7 @@ func ExampleController_newController() {
 	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", toOk, rateOk, retryOk, failOk)
 
 	d := ctrl.timeout.Duration()
-	a1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(time.Millisecond*500, http.StatusGatewayTimeout)))
+	a1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(true, http.StatusGatewayTimeout, time.Millisecond*500)))
 
 	d1 := a1.timeout.Duration()
 	fmt.Printf("test: cloneController() -> [prev-duration:%v] [curr-duration:%v]\n", d, d1)
@@ -32,7 +32,7 @@ func ExampleController_newController() {
 
 func ExampleController_newController_config() {
 	t := newTable(true, false)
-	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), nil, NewRateLimiterConfig(100, 10, 503), nil)
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), nil, NewRateLimiterConfig(true, 503, 100, 10), nil)
 
 	ctrl, _ := newController(route, t)
 
@@ -57,24 +57,24 @@ func ExampleController_newController_config() {
 
 func ExampleController_newController_Error() {
 	t := newTable(false, false)
-	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRateLimiterConfig(100, 10, 503))
+	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
 
 	_, errs := newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(time.Millisecond*1500, 0), NewRetryConfig(nil, 100, 10, 0))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRetryConfig(false, 100, 10, 0, nil))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(0, 0))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 0))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(10, 0), NewFailoverConfig(nil))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 10), NewFailoverConfig(nil))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = newRoute("test", NewRateLimiterConfig(-1, 10, 504))
+	route = newRoute("test", NewRateLimiterConfig(true, 504, -1, 10))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
