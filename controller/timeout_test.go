@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 )
 
@@ -19,11 +20,11 @@ func Example_newTimeout() {
 	//Output:
 	//test: newTimeout() -> [name:test-route] [current:100ns]
 	//test: newTimeout() -> [name:test-route2] [current:2s]
-	//test: cloneTimeout() -> [prev-config:{false 503 2s}] [prev-name:test-route2] [curr-config:{false 503 1s}] [curr-name:test-route2]
+	//test: cloneTimeout() -> [prev-config:{true 503 2s}] [prev-name:test-route2] [curr-config:{true 503 1s}] [curr-name:test-route2]
 
 }
 
-func Example_Timeout_State() {
+func ExampleTimeout_State() {
 	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
 
 	d := t.Duration()
@@ -45,33 +46,64 @@ func Example_Timeout_State() {
 
 }
 
-func Example_Timeout_SetTimeout() {
+func ExampleTimeout_SetTimeout() {
+	var v = make(url.Values)
 	name := "test-route"
-	config := NewTimeoutConfig(true, 0, time.Millisecond*1500)
+	config := NewTimeoutConfig(true, 504, time.Millisecond*1500)
 	t := newTable(true, false)
 
-	ok := t.AddController(newRoute(name, config))
-	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
+	errs := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	d := ctrl.t().timeout.Duration()
+	//to, _ := ctrl.Timeout()
+	d := ctrl.Timeout().Duration()
 	fmt.Printf("test: Duration() -> [%v]\n", d)
-	prevDuration := ctrl.(*controller).timeout.Duration()
 
-	ctrl.t().timeout.SetTimeout(time.Second * 2)
-	ctrl1 := t.LookupByName(name)
-	d = ctrl1.t().timeout.Duration()
-	fmt.Printf("test: SetTimeout(2s) -> [prev-duration:%v] [curr-duration:%v]\n", prevDuration, d)
-	prevDuration = ctrl1.t().timeout.Duration()
-
-	m := make(map[string]string, 16)
-	timeoutState(m, ctrl1.t().timeout)
-	fmt.Printf("test: timeoutState(map,t) -> %v\n", m)
+	v.Add("duration", "3s")
+	ctrl.Timeout().Signal(v)
+	ctrl = t.LookupByName(name)
+	//to, _ = ctrl.Timeout()
+	d = ctrl.Timeout().Duration()
+	fmt.Printf("test: Duration() -> [%v]\n", d)
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
 	//test: Duration() -> [1.5s]
-	//test: SetTimeout(2s) -> [prev-duration:1.5s] [curr-duration:2s]
-	//test: timeoutState(map,t) -> map[timeout:2000]
+	//test: Duration() -> [3s]
+
+}
+
+func ExampleTimeout_Toggle() {
+	var v = make(url.Values)
+	name := "test-route"
+	config := NewTimeoutConfig(true, 504, time.Millisecond*1500)
+	t := newTable(true, false)
+
+	errs := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
+
+	ctrl := t.LookupByName(name)
+	//to, _ := ctrl.Timeout()
+	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
+
+	v.Add("enable", "false")
+	ctrl.Timeout().Signal(v)
+	ctrl = t.LookupByName(name)
+	//to, _ = ctrl.Timeout()
+	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
+
+	v.Del("enable")
+	v.Add("enable", "true")
+	ctrl.Timeout().Signal(v)
+	ctrl = t.LookupByName(name)
+	//ctrl.to, _ = ctrl.Timeout()
+	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
+
+	//Output:
+	//test: Add() -> [[]] [count:1]
+	//test: IsEnabled() -> [true]
+	//test: IsEnabled() -> [false]
+	//test: IsEnabled() -> [true]
 
 }

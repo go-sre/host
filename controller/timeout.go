@@ -14,20 +14,21 @@ type Timeout interface {
 	Actuator
 	StatusCode() int
 	Duration() time.Duration
-	SetTimeout(timeout time.Duration)
 }
 
 type TimeoutConfig struct {
-	Disabled   bool
+	Enabled    bool
 	StatusCode int
 	Duration   time.Duration
 }
+
+var disabledTimeout = newTimeout("[disabled]", nil, NewTimeoutConfig(false, 0, -1))
 
 func NewTimeoutConfig(enabled bool, statusCode int, duration time.Duration) *TimeoutConfig {
 	if statusCode <= 0 {
 		statusCode = http.StatusGatewayTimeout
 	}
-	return &TimeoutConfig{Disabled: !enabled, StatusCode: statusCode, Duration: duration}
+	return &TimeoutConfig{Enabled: enabled, StatusCode: statusCode, Duration: duration}
 }
 
 type timeout struct {
@@ -61,32 +62,43 @@ func (t *timeout) validate() error {
 
 func timeoutState(m map[string]string, t *timeout) {
 	var val int64 = -1
-	//var statusCode = -1
-	if t != nil {
+
+	if t != nil && t.IsEnabled() {
 		val = int64(t.Duration() / time.Millisecond)
-		//	statusCode = t.StatusCode()
 	}
 	m[TimeoutName] = strconv.Itoa(int(val))
 }
 
-func (t *timeout) Signal(_ url.Values) error { return errors.New("timeout Actuator not supported") }
+func (t *timeout) Signal(values url.Values) error {
+	if values == nil {
+		return nil
+	}
+	UpdateEnable(t, values)
+	if values.Has("duration") {
+		v := values.Get("duration")
+		duration, err := ParseDuration(v)
+		if err != nil {
+			return err
+		}
+		t.setTimeout(duration)
+	}
+	return nil
+}
 
-func (t *timeout) IsEnabled() bool { return !t.config.Disabled }
+func (t *timeout) IsEnabled() bool { return t.config.Enabled }
 
 func (t *timeout) Enable() {
 	if t.IsEnabled() {
 		return
 	}
-	t.config.Disabled = false
-	// Need to update table
+	t.enableTimeout(true)
 }
 
 func (t *timeout) Disable() {
 	if !t.IsEnabled() {
 		return
 	}
-	t.config.Disabled = true
-	// Need to update table
+	t.enableTimeout(false)
 }
 
 func (t *timeout) StatusCode() int {
@@ -100,9 +112,28 @@ func (t *timeout) Duration() time.Duration {
 	return t.config.Duration
 }
 
-func (t *timeout) SetTimeout(duration time.Duration) {
-	if t.config.Duration == duration || duration <= 0 {
+func (t *timeout) enableTimeout(enable bool) {
+	if t.table == nil {
 		return
 	}
-	t.table.setTimeout(t.name, duration)
+	t.table.mu.Lock()
+	defer t.table.mu.Unlock()
+	if ctrl, ok := t.table.controllers[t.name]; ok {
+		c := cloneTimeout(ctrl.timeout)
+		c.config.Enabled = enable
+		t.table.update(t.name, cloneController[*timeout](ctrl, c))
+	}
+}
+
+func (t *timeout) setTimeout(duration time.Duration) {
+	if t.table == nil || t.config.Duration == duration || duration <= 0 {
+		return
+	}
+	t.table.mu.Lock()
+	defer t.table.mu.Unlock()
+	if ctrl, ok := t.table.controllers[t.name]; ok {
+		c := cloneTimeout(ctrl.timeout)
+		c.config.Duration = duration
+		t.table.update(t.name, cloneController[*timeout](ctrl, c))
+	}
 }

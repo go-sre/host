@@ -56,3 +56,22 @@ func urlValue(value string) (*url.URL, error) {
 func parseTest(req *http.Request) {
 	req.URL.Query()
 }
+
+func UpdateEnable(s State, values url.Values) error {
+	if s == nil || values == nil {
+		return errors.New("invalid argument: state or values is nil")
+	}
+	if values.Has("enable") {
+		v := values.Get("enable")
+		if v == "true" {
+			s.Enable()
+		} else {
+			if v == "false" {
+				s.Disable()
+			} else {
+				return errors.New(fmt.Sprintf("invalid argument: enable value is invalid : [%v]", v))
+			}
+		}
+	}
+	return nil
+}

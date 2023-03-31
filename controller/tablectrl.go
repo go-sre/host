@@ -2,48 +2,7 @@ package controller
 
 import (
 	"golang.org/x/time/rate"
-	"time"
 )
-
-func (t *table) enableFailover(name string, enabled bool) {
-	if name == "" {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if ctrl, ok := t.controllers[name]; ok {
-		c := cloneFailover(ctrl.failover)
-		c.enabled = enabled
-		t.update(name, cloneController[*failover](ctrl, c))
-	}
-}
-
-func (t *table) enableProxy(name string, enabled bool) {
-	if name == "" {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if ctrl, ok := t.controllers[name]; ok {
-		c := cloneProxy(ctrl.proxy)
-		c.enabled = enabled
-		t.update(name, cloneController[*proxy](ctrl, c))
-	}
-}
-
-func (t *table) setProxyPattern(name string, pattern string, enable bool) {
-	if name == "" {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if ctrl, ok := t.controllers[name]; ok {
-		fc := cloneProxy(ctrl.proxy)
-		fc.pattern = pattern
-		fc.enabled = enable
-		t.update(name, cloneController[*proxy](ctrl, fc))
-	}
-}
 
 /*
 func (t *table) setFailoverInvoke(name string, fn FailoverInvoke, enable bool) {
@@ -63,36 +22,6 @@ func (t *table) setFailoverInvoke(name string, fn FailoverInvoke, enable bool) {
 
 
 */
-/*
-func (t *table) enableTimeout(name string, enabled bool) {
-	if name == "" {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if ctrl, ok := t.controllers[name]; ok {
-		c := cloneTimeout(ctrl.timeout)
-		c.enabled = enabled
-		t.update(name, cloneController[*timeout](ctrl, c))
-		//ctrl.timeout.enabled = enabled
-		//t.controllers[name] = ctrl
-	}
-}
-
-
-*/
-func (t *table) setTimeout(name string, duration time.Duration) {
-	if name == "" {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if ctrl, ok := t.controllers[name]; ok {
-		c := cloneTimeout(ctrl.timeout)
-		c.config.Duration = duration
-		t.update(name, cloneController[*timeout](ctrl, c))
-	}
-}
 
 /*
 func (t *table) enableRateLimiter(name string, enabled bool) {

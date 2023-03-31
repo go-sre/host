@@ -20,8 +20,10 @@ type FailoverConfig struct {
 	invoke  FailoverInvoke
 }
 
-func NewFailoverConfig(invoke FailoverInvoke) *FailoverConfig {
-	return &FailoverConfig{invoke: invoke}
+var disabledFailover = newFailover("[disabled]", nil, NewFailoverConfig(false, nil))
+
+func NewFailoverConfig(enabled bool, invoke FailoverInvoke) *FailoverConfig {
+	return &FailoverConfig{Enabled: enabled, invoke: invoke}
 }
 
 type failover struct {
@@ -56,14 +58,18 @@ func (f *failover) validate() error {
 }
 
 func failoverState(m map[string]string, f *failover) {
-	if f == nil {
-		m[FailoverName] = ""
-	} else {
+	//if f == nil {
+	//	m[FailoverName] = ""
+	//} else {
+	if f != nil {
 		m[FailoverName] = strconv.FormatBool(f.IsEnabled())
 	}
 }
 
-func (f *failover) Signal(values url.Values) error { return nil }
+func (f *failover) Signal(values url.Values) error {
+	UpdateEnable(f, values)
+	return nil
+}
 
 func (f *failover) IsEnabled() bool { return f.enabled }
 
@@ -71,16 +77,16 @@ func (f *failover) Enable() {
 	if f.IsEnabled() {
 		return
 	}
-	f.enabled = true
-	f.table.enableFailover(f.name, true)
+	//f.enabled = true
+	f.enableFailover(true)
 }
 
 func (f *failover) Disable() {
 	if !f.IsEnabled() {
 		return
 	}
-	f.enabled = false
-	f.table.enableFailover(f.name, false)
+	//f.enabled = false
+	f.enableFailover(false)
 }
 
 func (f *failover) Invoke(failover bool) {
@@ -88,4 +94,17 @@ func (f *failover) Invoke(failover bool) {
 		return
 	}
 	f.invoke(f.name, failover)
+}
+
+func (f *failover) enableFailover(enabled bool) {
+	if f.table == nil {
+		return
+	}
+	f.table.mu.Lock()
+	defer f.table.mu.Unlock()
+	if ctrl, ok := f.table.controllers[f.name]; ok {
+		c := cloneFailover(ctrl.failover)
+		c.enabled = enabled
+		f.table.update(f.name, cloneController[*failover](ctrl, c))
+	}
 }

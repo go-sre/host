@@ -19,7 +19,7 @@ func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.
 			return
 		}
 		ctrl = controller.IngressTable().LookupHttp(r)
-		if toc, ok := ctrl.Timeout(); ok {
+		if toc := ctrl.Timeout(); toc.IsEnabled() {
 			m = httpsnoop.CaptureMetrics(http.TimeoutHandler(appHandler, toc.Duration(), msg), w, r)
 		} else {
 			m = httpsnoop.CaptureMetrics(appHandler, w, r)

@@ -19,7 +19,7 @@ type Route struct {
 }
 
 type TimeoutConfigJson struct {
-	Disabled   bool
+	Enabled    bool
 	StatusCode int
 	Duration   string
 }
@@ -92,7 +92,7 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 		if err != nil {
 			return Route{}, err
 		}
-		route.Timeout = NewTimeoutConfig(!config.Timeout.Disabled, config.Timeout.StatusCode, duration)
+		route.Timeout = NewTimeoutConfig(config.Timeout.Enabled, config.Timeout.StatusCode, duration)
 	}
 	if config.Retry != nil {
 		duration, err := ParseDuration(config.Retry.Wait)

@@ -10,7 +10,7 @@ func Example_newFailover() {
 	f := newFailover(name, nil, nil)
 	fmt.Printf("test: newFailover(nil) -> [enabled:%v] [validate:%v]\n", f.enabled, f.validate())
 
-	f = newFailover(name, nil, NewFailoverConfig(failoverFn))
+	f = newFailover(name, nil, NewFailoverConfig(false, failoverFn))
 	fmt.Printf("test: newFailover(testFn) -> [enabled:%v] [validate:%v]\n", f.enabled, f.validate())
 
 	f2 := cloneFailover(f)
@@ -18,10 +18,11 @@ func Example_newFailover() {
 	fmt.Printf("test: cloneFailover(f1) -> [f2-enabled:%v] [f2-validate:%v]\n", f2.enabled, f2.validate())
 
 	f.enabled = false
+	//m := make(map[string]string, 16)
+	//failoverState(m, nil)
+	//fmt.Printf("test: failoverState(map,nil) -> %v\n", m)
+
 	m := make(map[string]string, 16)
-	failoverState(m, nil)
-	fmt.Printf("test: failoverState(map,nil) -> %v\n", m)
-	m = make(map[string]string, 16)
 	failoverState(m, f)
 	fmt.Printf("test: failoverState(map,f1) -> %v\n", m)
 	m = make(map[string]string, 16)
@@ -32,7 +33,6 @@ func Example_newFailover() {
 	//test: newFailover(nil) -> [enabled:false] [validate:invalid configuration: Failover FailureInvoke function is nil]
 	//test: newFailover(testFn) -> [enabled:false] [validate:<nil>]
 	//test: cloneFailover(f1) -> [f2-enabled:true] [f2-validate:<nil>]
-	//test: failoverState(map,nil) -> map[failover:]
 	//test: failoverState(map,f1) -> map[failover:false]
 	//test: failoverState(map,f2) -> map[failover:true]
 
@@ -43,7 +43,7 @@ func Example_Failover_Status() {
 	name := "failover-test"
 	t := newTable(true, false)
 
-	err := t.AddController(newRoute(name, NewFailoverConfig(failoverFn)))
+	err := t.AddController(newRoute(name, NewFailoverConfig(false, failoverFn)))
 	fmt.Printf("test: Add() -> [error:%v] [count:%v]\n", err, t.count())
 
 	f := t.LookupByName(name)
@@ -82,7 +82,7 @@ func Example_Failover_Status() {
 func Example_Failover_Invoke() {
 	name := "failover-test"
 	t := newTable(true, false)
-	err := t.AddController(newRoute(name, NewFailoverConfig(failoverFn)))
+	err := t.AddController(newRoute(name, NewFailoverConfig(false, failoverFn)))
 	fmt.Printf("test: Add() -> [error:%v] [count:%v]\n", err, t.count())
 
 	f := t.LookupByName(name)

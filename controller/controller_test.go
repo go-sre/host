@@ -12,11 +12,11 @@ func ExampleController_newController() {
 
 	ctrl, _ := newController(route, t)
 
-	_, toOk := ctrl.Timeout()
+	//_, toOk := ctrl.Timeout()
 	_, rateOk := ctrl.RateLimiter()
 	_, retryOk := ctrl.Retry()
 	_, failOk := ctrl.Failover()
-	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", toOk, rateOk, retryOk, failOk)
+	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", ctrl.Timeout().IsEnabled(), rateOk, retryOk, failOk)
 
 	d := ctrl.timeout.Duration()
 	a1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(true, http.StatusGatewayTimeout, time.Millisecond*500)))
@@ -36,11 +36,11 @@ func ExampleController_newController_config() {
 
 	ctrl, _ := newController(route, t)
 
-	_, toOk := ctrl.Timeout()
+	//_, toOk := ctrl.Timeout()
 	_, rateOk := ctrl.RateLimiter()
 	_, retryOk := ctrl.Retry()
 	_, failOk := ctrl.Failover()
-	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", toOk, rateOk, retryOk, failOk)
+	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", ctrl.Timeout().IsEnabled(), rateOk, retryOk, failOk)
 
 	//d := ctrl.timeout.Duration()
 	//ctrl1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(time.Millisecond*500, http.StatusGatewayTimeout)))
@@ -70,7 +70,7 @@ func ExampleController_newController_Error() {
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 10), NewFailoverConfig(nil))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 10), NewFailoverConfig(false, nil))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 

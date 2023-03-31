@@ -54,7 +54,7 @@ func ExampleProxy_BuildUrl() {
 	//test: BuildUrl(http://google.com/search?q=test) -> http://google.com/search?q=test
 }
 
-func Example_Proxy_State() {
+func ExampleProxy_State() {
 	t := newTable(true, false)
 	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil))
 
@@ -71,23 +71,27 @@ func Example_Proxy_State() {
 
 }
 
-func Example_Proxy_SetPattern() {
+func ExampleProxy_SetPattern() {
 	name := "test-route"
 	config := NewProxyConfig(false, "http://localhost:8080", nil)
 	t := newTable(true, false)
 
-	ok := t.AddController(newRoute(name, config))
-	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
+	errs := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	pattern := ctrl.t().proxy.Pattern()
-	fmt.Printf("test: Pattern() -> [%v]\n", pattern)
-	prevPattern := ctrl.(*controller).proxy.Pattern()
+	//pattern := ctrl.t().proxy.Pattern()
+	fmt.Printf("test: Pattern() -> [%v]\n", ctrl.Proxy().Pattern())
+	prevPattern := ctrl.Proxy().Pattern() //ctrl.(*controller).proxy.Pattern()
 
-	ctrl.t().proxy.SetPattern("https://google.com")
+	var v = make(url.Values)
+	v.Add("pattern", "https://google.com")
+	//pxy, _ := ctrl.Proxy()
+	ctrl.Proxy().Signal(v)
+
 	ctrl1 := t.LookupByName(name)
-	pattern = ctrl1.t().proxy.Pattern()
-	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v]\n", prevPattern, pattern)
+	//pattern = ctrl1.t().proxy.Pattern()
+	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v]\n", prevPattern, ctrl1.Proxy().Pattern())
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
@@ -96,7 +100,7 @@ func Example_Proxy_SetPattern() {
 
 }
 
-func Example_Proxy_Enable() {
+func ExampleProxy_Toggle() {
 	name := "test-route"
 	config := NewProxyConfig(false, "http://localhost:8080", nil)
 	t := newTable(true, false)

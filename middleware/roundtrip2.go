@@ -28,7 +28,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 		ctrl.LogHttpEgress(start, time.Since(start), req, resp, controller.RateLimitFlag, false)
 		return resp, nil
 	}
-	if pc, ok := ctrl.Proxy(); ok && pc.IsEnabled() {
+	if pc := ctrl.Proxy(); pc.IsEnabled() {
 		req.URL = pc.BuildUrl(req.URL)
 		if req.URL != nil {
 			req.Host = req.URL.Host
@@ -37,8 +37,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 			req.Header.Add(header.Name, header.Value)
 		}
 	}
-	tc, _ := ctrl.Timeout()
-	resp, err, statusFlags := w.exchange(tc, req)
+	resp, err, statusFlags := w.exchange(ctrl.Timeout(), req)
 	if err != nil {
 		return resp, err
 	}
@@ -48,7 +47,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 		if retry {
 			ctrl.LogHttpEgress(start, time.Since(start), req, resp, prevFlags, false)
 			start = time.Now()
-			resp, err, statusFlags = w.exchange(tc, req)
+			resp, err, statusFlags = w.exchange(ctrl.Timeout(), req)
 		}
 	}
 	ctrl.LogHttpEgress(start, time.Since(start), req, resp, statusFlags, retry)
@@ -56,7 +55,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 }
 
 func (w *controllerWrapper) exchange(tc controller.Timeout, req *http.Request) (resp *http.Response, err error, statusFlags string) {
-	if tc == nil {
+	if tc == nil || !tc.IsEnabled() {
 		resp, err = w.rt.RoundTrip(req)
 		return
 	}

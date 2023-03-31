@@ -26,7 +26,7 @@ func EgressApply(ctx context.Context, statusCode func() int, uri, requestId, met
 		statusFlags = RateLimitFlag
 	}
 	if !limited {
-		if toc, ok := act.Timeout(); ok {
+		if toc := act.Timeout(); toc.IsEnabled() {
 			newCtx, cancelCtx = context.WithTimeout(ctx, toc.Duration())
 		}
 	}

@@ -33,11 +33,11 @@ type State interface {
 type Controller interface {
 	Actuator
 	Name() string
-	Timeout() (Timeout, bool)
+	Timeout() Timeout
 	RateLimiter() (RateLimiter, bool)
 	Retry() (Retry, bool)
 	Failover() (Failover, bool)
-	Proxy() (Proxy, bool)
+	Proxy() Proxy
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
 	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool)
@@ -86,6 +86,8 @@ func newController(route Route, t *table) (*controller, []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
+	} else {
+		ctrl.timeout = disabledTimeout
 	}
 	if route.RateLimiter != nil {
 		ctrl.rateLimiter = newRateLimiter(route.Name, t, route.RateLimiter)
@@ -114,16 +116,26 @@ func newController(route Route, t *table) (*controller, []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
+	} else {
+		ctrl.proxy = disabledProxy
 	}
 	return ctrl, errs
 }
 
 func newDefaultController(name string) *controller {
-	return &controller{name: name}
+	ctrl := new(controller)
+	ctrl.name = name
+	ctrl.timeout = disabledTimeout
+	ctrl.proxy = disabledProxy
+	return ctrl
 }
 
 func newNilController(name string) *controller {
-	return &controller{name: name}
+	ctrl := new(controller)
+	ctrl.name = name
+	ctrl.timeout = disabledTimeout
+	ctrl.proxy = disabledProxy
+	return ctrl
 }
 
 func (c *controller) validate(egress bool) error {
@@ -151,11 +163,8 @@ func (c *controller) Name() string {
 	return c.name
 }
 
-func (c *controller) Timeout() (Timeout, bool) {
-	if c.timeout == nil {
-		return nil, false
-	}
-	return c.timeout, true
+func (c *controller) Timeout() Timeout {
+	return c.timeout
 }
 
 func (c *controller) RateLimiter() (RateLimiter, bool) {
@@ -179,11 +188,8 @@ func (c *controller) Failover() (Failover, bool) {
 	return c.failover, true
 }
 
-func (c *controller) Proxy() (Proxy, bool) {
-	if c.proxy == nil {
-		return nil, false
-	}
-	return c.proxy, true
+func (c *controller) Proxy() Proxy {
+	return c.proxy
 }
 
 func (c *controller) Signal(values url.Values) error {

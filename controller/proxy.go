@@ -16,7 +16,6 @@ type Proxy interface {
 	State
 	Actuator
 	Pattern() string
-	SetPattern(pattern string)
 	Headers() []Header
 	BuildUrl(uri *url.URL) *url.URL
 }
@@ -26,6 +25,8 @@ type ProxyConfig struct {
 	Pattern string
 	Headers []Header
 }
+
+var disabledProxy = newProxy("[disabled]", nil, NewProxyConfig(false, "", nil))
 
 func NewProxyConfig(enabled bool, pattern string, headers []Header) *ProxyConfig {
 	p := new(ProxyConfig)
@@ -69,14 +70,25 @@ func (p *proxy) validate() error {
 }
 
 func proxyState(m map[string]string, p *proxy) {
-	if p == nil {
-		m[ProxyName] = ""
-	} else {
+	//if p == nil || !p.IsEnabled() {
+	//	m[ProxyName] = ""
+	//} else {
+	if p != nil {
 		m[ProxyName] = strconv.FormatBool(p.IsEnabled())
 	}
+	//}
 }
 
-func (p *proxy) Signal(values url.Values) error { return nil }
+func (p *proxy) Signal(values url.Values) error {
+	if values == nil {
+		return nil
+	}
+	UpdateEnable(p, values)
+	if values.Has("pattern") {
+		return p.setPattern(values.Get("pattern"))
+	}
+	return nil
+}
 
 func (p *proxy) IsEnabled() bool { return p.enabled }
 
@@ -84,16 +96,14 @@ func (p *proxy) Enable() {
 	if p.IsEnabled() {
 		return
 	}
-	p.enabled = true
-	p.table.enableProxy(p.name, true)
+	p.enableProxy(true)
 }
 
 func (p *proxy) Disable() {
 	if !p.IsEnabled() {
 		return
 	}
-	p.enabled = false
-	p.table.enableProxy(p.name, false)
+	p.enableProxy(false)
 }
 
 func (p *proxy) Pattern() string {
@@ -102,12 +112,6 @@ func (p *proxy) Pattern() string {
 
 func (p *proxy) Headers() []Header {
 	return p.headers
-}
-
-func (p *proxy) SetPattern(pattern string) {
-	if len(pattern) != 0 {
-		p.table.setProxyPattern(p.name, pattern, false)
-	}
 }
 
 func (p *proxy) BuildUrl(uri *url.URL) *url.URL {
@@ -141,4 +145,38 @@ func (p *proxy) BuildUrl(uri *url.URL) *url.URL {
 		return uri
 	}
 	return u
+}
+
+func (p *proxy) enableProxy(enabled bool) {
+	if p.table == nil {
+		return
+	}
+	p.table.mu.Lock()
+	defer p.table.mu.Unlock()
+	if ctrl, ok := p.table.controllers[p.name]; ok {
+		c := cloneProxy(ctrl.proxy)
+		c.enabled = enabled
+		p.table.update(p.name, cloneController[*proxy](ctrl, c))
+	}
+}
+
+func (p *proxy) setPattern(pattern string) error {
+	if p.table == nil || p.pattern == pattern {
+		return nil
+	}
+	if len(pattern) == 0 {
+		return errors.New("invalid argument: proxy pattern is empty")
+	}
+	_, err := url.Parse(pattern)
+	if err != nil {
+		return err
+	}
+	p.table.mu.Lock()
+	defer p.table.mu.Unlock()
+	if ctrl, ok := p.table.controllers[p.name]; ok {
+		fc := cloneProxy(ctrl.proxy)
+		fc.pattern = pattern
+		p.table.update(p.name, cloneController[*proxy](ctrl, fc))
+	}
+	return nil
 }

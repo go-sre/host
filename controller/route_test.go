@@ -28,7 +28,7 @@ func ExampleNewRoute() {
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
 
 	name = "timeout-rateLimiter-retry-failover"
-	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}), NewFailoverConfig(nil))
+	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}), NewFailoverConfig(false, nil))
 	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
 
@@ -81,7 +81,7 @@ func ExampleConfig_Marshal() {
 	//fmt.Printf("test: []Route -> [error:%v] %v\n", err, string(buf))
 
 	//Output:
-	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Disabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Disabled":false,"StatusCode":503,"Limit":100,"Burst":25},"Retry":{"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null,"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null}}
+	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Enabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Disabled":false,"StatusCode":503,"Limit":100,"Burst":25},"Retry":{"Enabled":false,"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null,"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null}}
 
 }
 
@@ -90,6 +90,7 @@ func ExampleNewRouteFromConfig() {
 		Name:    "test-route",
 		Pattern: "/health/liveness",
 		Timeout: &TimeoutConfigJson{
+			Enabled:    true,
 			Duration:   "500ms",
 			StatusCode: 5040,
 		},
@@ -115,7 +116,7 @@ func ExampleNewRouteFromConfig() {
 
 	//Output:
 	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "5x": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
-	//test: NewRouteFromConfig() [err:<nil>] [timeout:&{false 5040 500ms}] [retry:&{100 25 4m5s []}]
+	//test: NewRouteFromConfig() [err:<nil>] [timeout:&{true 5040 500ms}] [retry:&{false 100 25 4m5s []}]
 	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "x34": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
 
 }
