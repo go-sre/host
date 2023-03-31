@@ -23,7 +23,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 	}
 	ctrl := controller.EgressTable().LookupHttp(req)
 	ctrl.UpdateHeaders(req)
-	if rlc, ok := ctrl.RateLimiter(); ok && !rlc.Allow() {
+	if rlc := ctrl.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
 		resp := &http.Response{Request: req, StatusCode: rlc.StatusCode()}
 		ctrl.LogHttpEgress(start, time.Since(start), req, resp, controller.RateLimitFlag, false)
 		return resp, nil

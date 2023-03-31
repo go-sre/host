@@ -108,3 +108,22 @@ func (f *failover) enableFailover(enabled bool) {
 		f.table.update(f.name, cloneController[*failover](ctrl, c))
 	}
 }
+
+/*
+func (t *table) setFailoverInvoke(name string, fn FailoverInvoke, enable bool) {
+	if name == "" {
+		return
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if ctrl, ok := t.controllers[name]; ok {
+		fc := cloneFailover(ctrl.failover)
+		fc.enabled = true
+		fc.invoke = fn
+		fc.enabled = enable
+		t.update(name, cloneController[*failover](ctrl, fc))
+	}
+}
+
+
+*/

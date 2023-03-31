@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/time/rate"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -21,19 +20,19 @@ type RateLimiter interface {
 	Actuator
 	Allow() bool
 	StatusCode() int
+	LimitAndBurst() (rate.Limit, int)
 	SetLimit(limit rate.Limit)
 	SetBurst(burst int)
-	SetRateLimiter(limit rate.Limit, burst int)
-	AdjustRateLimiter(percentage int) bool
-	LimitAndBurst() (rate.Limit, int)
 }
 
 type RateLimiterConfig struct {
-	Disabled   bool
+	Enabled    bool
 	StatusCode int
 	Limit      rate.Limit
 	Burst      int
 }
+
+var disabledRateLimiter = newRateLimiter("[disabled]", nil, NewRateLimiterConfig(false, 0, 0, 0))
 
 func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst int) *RateLimiterConfig {
 	//validateLimiter(&limit, &burst)
@@ -44,7 +43,7 @@ func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst 
 		statusCode = http.StatusTooManyRequests
 	}
 	c.StatusCode = statusCode
-	c.Disabled = !enabled
+	c.Enabled = enabled
 	return c
 }
 
@@ -111,25 +110,29 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 	return m
 }
 
-func (r *rateLimiter) IsEnabled() bool { return !r.config.Disabled }
+func (r *rateLimiter) IsEnabled() bool { return r.config.Enabled }
 
 func (r *rateLimiter) Enable() {
 	if r.IsEnabled() {
 		return
 	}
-	r.config.Disabled = false
-	// Need to update table
+	r.enableRateLimiter(true)
 }
 
 func (r *rateLimiter) Disable() {
 	if !r.IsEnabled() {
 		return
 	}
-	r.config.Disabled = true
-	// Need to update table
+	r.enableRateLimiter(false)
 }
 
-func (r *rateLimiter) Signal(values url.Values) error { return nil }
+func (r *rateLimiter) Signal(values url.Values) error {
+	if values == nil {
+		return nil
+	}
+	UpdateEnable(r, values)
+	return nil
+}
 
 func (r *rateLimiter) Allow() bool {
 	if r.config.Limit == rate.Inf {
@@ -142,20 +145,25 @@ func (r *rateLimiter) StatusCode() int {
 	return r.config.StatusCode
 }
 
+func (r *rateLimiter) LimitAndBurst() (rate.Limit, int) {
+	return r.config.Limit, r.config.Burst
+}
+
 func (r *rateLimiter) SetLimit(limit rate.Limit) {
 	if r.config.Limit == limit {
 		return
 	}
-	r.table.setRateLimit(r.name, limit)
+	r.setRateLimit(limit)
 }
 
 func (r *rateLimiter) SetBurst(burst int) {
 	if r.config.Burst == burst {
 		return
 	}
-	r.table.setRateBurst(r.name, burst)
+	r.setRateBurst(burst)
 }
 
+/*
 func (r *rateLimiter) SetRateLimiter(limit rate.Limit, burst int) {
 	validateLimiter(&limit, &burst)
 	if r.config.Limit == limit && r.config.Burst == burst {
@@ -175,10 +183,6 @@ func (r *rateLimiter) AdjustRateLimiter(percentage int) bool {
 	}
 	r.table.setRateLimiter(r.name, RateLimiterConfig{Limit: rate.Limit(newLimit), Burst: newBurst})
 	return true
-}
-
-func (r *rateLimiter) LimitAndBurst() (rate.Limit, int) {
-	return r.config.Limit, r.config.Burst
 }
 
 func limitAdjust(val float64, percentage int) (float64, bool) {
@@ -203,3 +207,66 @@ func burstAdjust(val int, percentage int) (int, bool) {
 	}
 	return val - change, true
 }
+
+*/
+
+func (r *rateLimiter) enableRateLimiter(enabled bool) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRateLimiter(ctrl.rateLimiter)
+		c.config.Enabled = enabled
+		r.table.update(r.name, cloneController[*rateLimiter](ctrl, c))
+	}
+}
+
+func (r *rateLimiter) setRateLimit(limit rate.Limit) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRateLimiter(ctrl.rateLimiter)
+		c.config.Limit = limit
+		// Not cloning the limiter as an old reference will not cause stale data when logging
+		c.rateLimiter.SetLimit(limit)
+		r.table.update(r.name, cloneController[*rateLimiter](ctrl, c))
+	}
+}
+
+func (r *rateLimiter) setRateBurst(burst int) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRateLimiter(ctrl.rateLimiter)
+		c.config.Burst = burst
+		// Not cloning the limiter as an old reference will not cause stale data when logging
+		c.rateLimiter.SetBurst(burst)
+		r.table.update(r.name, cloneController[*rateLimiter](ctrl, c))
+	}
+}
+
+/*
+func (t *table) setRateLimiter(name string, config RateLimiterConfig) {
+	if name == "" {
+		return
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if ctrl, ok := t.controllers[name]; ok {
+		c := cloneRateLimiter(ctrl.rateLimiter)
+		c.config.Limit = config.Limit
+		c.config.Burst = config.Burst
+		c.rateLimiter = rate.NewLimiter(c.config.Limit, c.config.Burst)
+		t.update(name, cloneController[*rateLimiter](ctrl, c))
+	}
+}
+
+*/

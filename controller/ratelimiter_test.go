@@ -56,23 +56,23 @@ func Example_RateLimiter_Status() {
 }
 */
 
-func Example_RateLimiter_Set() {
+func ExampleRateLimiter_Set() {
 	name := "test-route"
 	config := NewRateLimiterConfig(true, 503, 10, 100)
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
 
-	act := t.LookupByName(name)
-	fmt.Printf("test: rateLimiterState(map,t) -> %v\n", rateLimiterState(nil, act.t().rateLimiter))
+	ctrl := t.LookupByName(name)
+	fmt.Printf("test: rateLimiterState(map,t) -> %v\n", rateLimiterState(nil, ctrl.t().rateLimiter))
 
-	act.t().rateLimiter.SetLimit(rate.Inf)
-	act1 := t.LookupByName(name)
-	fmt.Printf("test: SetLimit(rate.Inf) -> %v\n", rateLimiterState(nil, act1.t().rateLimiter))
+	ctrl.RateLimiter().SetLimit(rate.Inf)
+	ctrl1 := t.LookupByName(name)
+	fmt.Printf("test: SetLimit(rate.Inf) -> %v\n", rateLimiterState(nil, ctrl1.t().rateLimiter))
 
-	act1.t().rateLimiter.SetBurst(1)
-	act = t.LookupByName(name)
-	fmt.Printf("test: SetBurst(1) -> %v\n", rateLimiterState(nil, act.t().rateLimiter))
+	ctrl1.RateLimiter().SetBurst(1)
+	ctrl = t.LookupByName(name)
+	fmt.Printf("test: SetBurst(1) -> %v\n", rateLimiterState(nil, ctrl.t().rateLimiter))
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
@@ -82,6 +82,7 @@ func Example_RateLimiter_Set() {
 
 }
 
+/*
 func Example_RateLimiter_Adjust() {
 	name := "test-route"
 	config := NewRateLimiterConfig(true, 503, 10, 1)
@@ -124,3 +125,6 @@ func Example_RateLimiter_Adjust() {
 	//test: AdjustRateLimiter(-10) -> [true] [state:map[burst:25 rateLimit:99]]
 
 }
+
+
+*/

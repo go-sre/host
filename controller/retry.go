@@ -19,9 +19,10 @@ type Retry interface {
 	State
 	Actuator
 	IsRetryable(statusCode int) (ok bool, status string)
-	SetRateLimiter(limit rate.Limit, burst int)
-	AdjustRateLimiter(percentage int) bool
+	//SetRateLimiter(limit rate.Limit, burst int)
 	LimitAndBurst() (rate.Limit, int)
+	SetLimit(limit rate.Limit)
+	SetBurst(burst int)
 }
 
 type RetryConfig struct {
@@ -31,6 +32,8 @@ type RetryConfig struct {
 	Wait    time.Duration
 	Codes   []int
 }
+
+var disabledRetry = newRetry("[disabled]", nil, NewRetryConfig(false, 0, 0, 0, nil))
 
 func NewRetryConfig(enabled bool, limit rate.Limit, burst int, wait time.Duration, validCodes []int) *RetryConfig {
 	c := new(RetryConfig)
@@ -109,25 +112,22 @@ func (r *retry) Enable() {
 	if r.IsEnabled() {
 		return
 	}
-	r.config.Enabled = true
-	r.table.enableRetry(r.name, true)
+	r.enableRetry(true)
 }
 
 func (r *retry) Disable() {
 	if !r.IsEnabled() {
 		return
 	}
-	r.config.Enabled = false
-	r.table.enableRetry(r.name, false)
+	r.enableRetry(false)
 }
 
-func (r *retry) Signal(values url.Values) error { return nil }
-
-func (r *retry) SetRateLimiter(limit rate.Limit, burst int) {
-	if r.config.Limit == limit && r.config.Burst == burst {
-		return
+func (r *retry) Signal(values url.Values) error {
+	if values == nil {
+		return nil
 	}
-	r.table.setRetryRateLimit(r.name, limit, burst)
+	UpdateEnable(r, values)
+	return nil
 }
 
 func (r *retry) IsRetryable(statusCode int) (bool, string) {
@@ -150,6 +150,7 @@ func (r *retry) IsRetryable(statusCode int) (bool, string) {
 	return false, ""
 }
 
+/*
 func (r *retry) AdjustRateLimiter(percentage int) bool {
 	newLimit, ok := limitAdjust(float64(r.config.Limit), percentage)
 	if !ok {
@@ -163,6 +164,65 @@ func (r *retry) AdjustRateLimiter(percentage int) bool {
 	return true
 }
 
+*/
+
 func (r *retry) LimitAndBurst() (rate.Limit, int) {
 	return r.config.Limit, r.config.Burst
+}
+
+func (r *retry) SetLimit(limit rate.Limit) {
+	if r.config.Limit == limit {
+		return
+	}
+	r.setRetryRateLimit(limit)
+}
+
+func (r *retry) SetBurst(burst int) {
+	if r.config.Burst == burst {
+		return
+	}
+	r.setRetryRateBurst(burst)
+}
+
+func (r *retry) enableRetry(enable bool) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRetry(ctrl.retry)
+		c.config.Enabled = enable
+		r.table.update(r.name, cloneController[*retry](ctrl, c))
+	}
+}
+
+func (r *retry) setRetryRateLimit(limit rate.Limit) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRetry(ctrl.retry)
+		c.config.Limit = limit
+		// Not cloning the limiter as an old reference will not cause stale data when logging
+		c.rateLimiter = rate.NewLimiter(limit, ctrl.retry.config.Burst)
+		r.table.update(r.name, cloneController[*retry](ctrl, c))
+	}
+}
+
+func (r *retry) setRetryRateBurst(burst int) {
+	if r.table == nil {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRetry(ctrl.retry)
+		c.config.Burst = burst
+		// Not cloning the limiter as an old reference will not cause stale data when logging
+		c.rateLimiter = rate.NewLimiter(ctrl.retry.config.Limit, burst)
+		r.table.update(r.name, cloneController[*retry](ctrl, c))
+	}
 }

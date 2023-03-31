@@ -84,20 +84,17 @@ func ExampleTimeout_Toggle() {
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	//to, _ := ctrl.Timeout()
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
 	v.Add("enable", "false")
 	ctrl.Timeout().Signal(v)
 	ctrl = t.LookupByName(name)
-	//to, _ = ctrl.Timeout()
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
 	v.Del("enable")
 	v.Add("enable", "true")
 	ctrl.Timeout().Signal(v)
 	ctrl = t.LookupByName(name)
-	//ctrl.to, _ = ctrl.Timeout()
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
 	//Output:

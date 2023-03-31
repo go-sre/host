@@ -21,7 +21,7 @@ func EgressApply(ctx context.Context, statusCode func() int, uri, requestId, met
 	var cancelCtx context.CancelFunc
 
 	act := EgressTable().LookupUri(uri, method)
-	if rlc, ok := act.RateLimiter(); ok && !rlc.Allow() {
+	if rlc := act.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
 		limited = true
 		statusFlags = RateLimitFlag
 	}

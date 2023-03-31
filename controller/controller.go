@@ -34,9 +34,9 @@ type Controller interface {
 	Actuator
 	Name() string
 	Timeout() Timeout
-	RateLimiter() (RateLimiter, bool)
-	Retry() (Retry, bool)
-	Failover() (Failover, bool)
+	RateLimiter() RateLimiter
+	Retry() Retry
+	Failover() Failover
 	Proxy() Proxy
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
@@ -77,8 +77,7 @@ func cloneController[T *timeout | *rateLimiter | *retry | *proxy | *failover](cu
 func newController(route Route, t *table) (*controller, []error) {
 	var errs []error
 	var err error
-	ctrl := new(controller)
-	ctrl.name = route.Name
+	ctrl := newDefaultController(route.Name)
 	ctrl.ping = route.Ping
 	if route.Timeout != nil {
 		ctrl.timeout = newTimeout(route.Name, t, route.Timeout)
@@ -86,8 +85,6 @@ func newController(route Route, t *table) (*controller, []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
-	} else {
-		ctrl.timeout = disabledTimeout
 	}
 	if route.RateLimiter != nil {
 		ctrl.rateLimiter = newRateLimiter(route.Name, t, route.RateLimiter)
@@ -116,8 +113,6 @@ func newController(route Route, t *table) (*controller, []error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
-	} else {
-		ctrl.proxy = disabledProxy
 	}
 	return ctrl, errs
 }
@@ -127,15 +122,20 @@ func newDefaultController(name string) *controller {
 	ctrl.name = name
 	ctrl.timeout = disabledTimeout
 	ctrl.proxy = disabledProxy
+	ctrl.rateLimiter = disabledRateLimiter
+	ctrl.retry = disabledRetry
+	ctrl.failover = disabledFailover
 	return ctrl
 }
 
 func newNilController(name string) *controller {
-	ctrl := new(controller)
-	ctrl.name = name
-	ctrl.timeout = disabledTimeout
-	ctrl.proxy = disabledProxy
-	return ctrl
+	return newDefaultController(name)
+	//ctrl := new(controller)
+	//ctrl.name = name
+	//ctrl.timeout = disabledTimeout
+	//ctrl.proxy = disabledProxy
+	//ctrl.rateLimiter = disabledRateLimiter
+	//return ctrl
 }
 
 func (c *controller) validate(egress bool) error {
@@ -167,25 +167,16 @@ func (c *controller) Timeout() Timeout {
 	return c.timeout
 }
 
-func (c *controller) RateLimiter() (RateLimiter, bool) {
-	if c.rateLimiter == nil {
-		return nil, false
-	}
-	return c.rateLimiter, true
+func (c *controller) RateLimiter() RateLimiter {
+	return c.rateLimiter
 }
 
-func (c *controller) Retry() (Retry, bool) {
-	if c.retry == nil {
-		return nil, false
-	}
-	return c.retry, true
+func (c *controller) Retry() Retry {
+	return c.retry
 }
 
-func (c *controller) Failover() (Failover, bool) {
-	if c.failover == nil {
-		return nil, false
-	}
-	return c.failover, true
+func (c *controller) Failover() Failover {
+	return c.failover
 }
 
 func (c *controller) Proxy() Proxy {
