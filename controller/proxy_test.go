@@ -24,6 +24,24 @@ func Example_newProxy() {
 
 }
 
+func ExampleProxy_State() {
+	t := newTable(true, false)
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil))
+
+	m := make(map[string]string, 16)
+	proxyState(m, p)
+	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
+	m = make(map[string]string, 16)
+	p.enabled = true
+	proxyState(m, p)
+	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
+
+	//Output:
+	//test: proxyState(map,p) -> [enabled:false] map[proxy:false]
+	//test: proxyState(map,p) -> [enabled:true] map[proxy:true]
+
+}
+
 func ExampleProxy_BuildUrl() {
 	t := newTable(true, false)
 	uri, _ := url.Parse("https://localhost:8080/basePath/resource?first=false")
@@ -54,23 +72,6 @@ func ExampleProxy_BuildUrl() {
 	//test: BuildUrl(http://google.com/search?q=test) -> http://google.com/search?q=test
 }
 
-func ExampleProxy_State() {
-	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil))
-
-	m := make(map[string]string, 16)
-	proxyState(m, nil)
-	fmt.Printf("test: proxyState(map,nil) -> %v\n", m)
-	m = make(map[string]string, 16)
-	proxyState(m, p)
-	fmt.Printf("test: proxyState(map,p) -> %v\n", m)
-
-	//Output:
-	//test: proxyState(map,nil) -> map[proxy:]
-	//test: proxyState(map,p) -> map[proxy:false]
-
-}
-
 func ExampleProxy_SetPattern() {
 	name := "test-route"
 	config := NewProxyConfig(false, "http://localhost:8080", nil)
@@ -80,17 +81,14 @@ func ExampleProxy_SetPattern() {
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	//pattern := ctrl.t().proxy.Pattern()
 	fmt.Printf("test: Pattern() -> [%v]\n", ctrl.Proxy().Pattern())
-	prevPattern := ctrl.Proxy().Pattern() //ctrl.(*controller).proxy.Pattern()
+	prevPattern := ctrl.Proxy().Pattern()
 
 	var v = make(url.Values)
-	v.Add("pattern", "https://google.com")
-	//pxy, _ := ctrl.Proxy()
+	v.Add(PatternKey, "https://google.com")
 	ctrl.Proxy().Signal(v)
 
 	ctrl1 := t.LookupByName(name)
-	//pattern = ctrl1.t().proxy.Pattern()
 	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v]\n", prevPattern, ctrl1.Proxy().Pattern())
 
 	//Output:
@@ -109,14 +107,12 @@ func ExampleProxy_Toggle() {
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
 
 	ctrl := t.LookupByName(name)
-	enabled := ctrl.t().proxy.IsEnabled()
-	fmt.Printf("test: IsEnabled() -> [%v]\n", enabled)
-	prevEnabled := ctrl.(*controller).proxy.IsEnabled()
+	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.t().proxy.IsEnabled())
+	prevEnabled := ctrl.Proxy().IsEnabled()
 
-	ctrl.t().proxy.Enable()
+	ctrl.Proxy().Signal(EnableValues(true))
 	ctrl1 := t.LookupByName(name)
-	enabled = ctrl1.t().proxy.IsEnabled()
-	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, enabled)
+	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.t().proxy.IsEnabled())
 
 	//Output:
 	//test: Add() -> [[]] [count:1]

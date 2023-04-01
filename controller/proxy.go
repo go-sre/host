@@ -70,13 +70,11 @@ func (p *proxy) validate() error {
 }
 
 func proxyState(m map[string]string, p *proxy) {
-	//if p == nil || !p.IsEnabled() {
-	//	m[ProxyName] = ""
-	//} else {
 	if p != nil {
 		m[ProxyName] = strconv.FormatBool(p.IsEnabled())
+	} else {
+		m[ProxyName] = strconv.FormatBool(false)
 	}
-	//}
 }
 
 func (p *proxy) Signal(values url.Values) error {
@@ -84,8 +82,8 @@ func (p *proxy) Signal(values url.Values) error {
 		return nil
 	}
 	UpdateEnable(p, values)
-	if values.Has("pattern") {
-		return p.setPattern(values.Get("pattern"))
+	if values.Has(PatternKey) {
+		return p.setPattern(values.Get(PatternKey))
 	}
 	return nil
 }

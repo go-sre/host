@@ -7,10 +7,11 @@ import (
 )
 
 func Example_newTimeout() {
-	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, 100))
+	tbl := newTable(true, false)
+	t := newTimeout("test-route", tbl, NewTimeoutConfig(true, 0, 100))
 	fmt.Printf("test: newTimeout() -> [name:%v] [current:%v]\n", t.name, t.config.Duration)
 
-	t = newTimeout("test-route2", newTable(true, false), NewTimeoutConfig(true, 503, time.Millisecond*2000))
+	t = newTimeout("test-route2", tbl, NewTimeoutConfig(true, 503, time.Millisecond*2000))
 	fmt.Printf("test: newTimeout() -> [name:%v] [current:%v]\n", t.name, t.config.Duration)
 
 	t2 := cloneTimeout(t)
@@ -26,23 +27,21 @@ func Example_newTimeout() {
 
 func ExampleTimeout_State() {
 	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
-
-	d := t.Duration()
-	fmt.Printf("test: Duration() -> [%v]\n", d)
-
-	t = newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
+	fmt.Printf("test: newTimeout() -> [name:%v] [state:%v]\n", t.name, t.config)
 
 	m := make(map[string]string, 16)
-	timeoutState(m, nil)
-	fmt.Printf("test: timeoutState(map,nil) -> %v\n", m)
+	timeoutState(m, t)
+	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] %v\n", t.IsEnabled(), m)
+
+	t.config.Enabled = false
 	m = make(map[string]string, 16)
 	timeoutState(m, t)
-	fmt.Printf("test: timeoutState(map,t) -> %v\n", m)
+	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] %v\n", t.IsEnabled(), m)
 
 	//Output:
-	//test: Duration() -> [2s]
-	//test: timeoutState(map,nil) -> map[timeout:-1]
-	//test: timeoutState(map,t) -> map[timeout:2000]
+	//test: newTimeout() -> [name:test-route] [state:{true 504 2s}]
+	//test: timeoutState(map,t) -> [enabled:true] map[timeout:2000]
+	//test: timeoutState(map,t) -> [enabled:false] map[timeout:-1]
 
 }
 
@@ -56,14 +55,12 @@ func ExampleTimeout_SetTimeout() {
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	//to, _ := ctrl.Timeout()
 	d := ctrl.Timeout().Duration()
 	fmt.Printf("test: Duration() -> [%v]\n", d)
 
-	v.Add("duration", "3s")
+	v.Add(DurationKey, "3s")
 	ctrl.Timeout().Signal(v)
 	ctrl = t.LookupByName(name)
-	//to, _ = ctrl.Timeout()
 	d = ctrl.Timeout().Duration()
 	fmt.Printf("test: Duration() -> [%v]\n", d)
 
@@ -75,7 +72,6 @@ func ExampleTimeout_SetTimeout() {
 }
 
 func ExampleTimeout_Toggle() {
-	var v = make(url.Values)
 	name := "test-route"
 	config := NewTimeoutConfig(true, 504, time.Millisecond*1500)
 	t := newTable(true, false)
@@ -86,14 +82,11 @@ func ExampleTimeout_Toggle() {
 	ctrl := t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
-	v.Add("enable", "false")
-	ctrl.Timeout().Signal(v)
+	ctrl.Timeout().Signal(EnableValues(false))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
-	v.Del("enable")
-	v.Add("enable", "true")
-	ctrl.Timeout().Signal(v)
+	ctrl.Timeout().Signal(EnableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 

@@ -58,11 +58,10 @@ func (f *failover) validate() error {
 }
 
 func failoverState(m map[string]string, f *failover) {
-	//if f == nil {
-	//	m[FailoverName] = ""
-	//} else {
 	if f != nil {
 		m[FailoverName] = strconv.FormatBool(f.IsEnabled())
+	} else {
+		m[FailoverName] = strconv.FormatBool(false)
 	}
 }
 
@@ -77,7 +76,6 @@ func (f *failover) Enable() {
 	if f.IsEnabled() {
 		return
 	}
-	//f.enabled = true
 	f.enableFailover(true)
 }
 
@@ -85,7 +83,6 @@ func (f *failover) Disable() {
 	if !f.IsEnabled() {
 		return
 	}
-	//f.enabled = false
 	f.enableFailover(false)
 }
 

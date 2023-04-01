@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"net/url"
 )
 
 var failoverFn FailoverInvoke = func(name string, failover bool) { fmt.Printf("test: Invoke(%v,%v)\n", name, failover) }
@@ -20,29 +19,33 @@ func Example_newFailover() {
 	f2.enabled = true
 	fmt.Printf("test: cloneFailover(f1) -> [f2-enabled:%v] [f2-validate:%v]\n", f2.enabled, f2.validate())
 
-	f.enabled = false
-	//m := make(map[string]string, 16)
-	//failoverState(m, nil)
-	//fmt.Printf("test: failoverState(map,nil) -> %v\n", m)
-
-	m := make(map[string]string, 16)
-	failoverState(m, f)
-	fmt.Printf("test: failoverState(map,f1) -> %v\n", m)
-	m = make(map[string]string, 16)
-	failoverState(m, f2)
-	fmt.Printf("test: failoverState(map,f2) -> %v\n", m)
-
 	//Output:
 	//test: newFailover(nil) -> [enabled:false] [validate:invalid configuration: Failover FailureInvoke function is nil]
 	//test: newFailover(testFn) -> [enabled:false] [validate:<nil>]
 	//test: cloneFailover(f1) -> [f2-enabled:true] [f2-validate:<nil>]
-	//test: failoverState(map,f1) -> map[failover:false]
-	//test: failoverState(map,f2) -> map[failover:true]
+
+}
+
+func ExampleFailover_State() {
+	name := "failover-test"
+	f := newFailover(name, nil, NewFailoverConfig(false, failoverFn))
+
+	m := make(map[string]string, 16)
+	failoverState(m, f)
+	fmt.Printf("test: failoverState(map,f1) -> [enabled:%v] %v\n", f.IsEnabled(), m)
+
+	m = make(map[string]string, 16)
+	f.enabled = true
+	failoverState(m, f)
+	fmt.Printf("test: failoverState(map,f2) -> [enabled:%v] %v\n", f.IsEnabled(), m)
+
+	//Output:
+	//test: failoverState(map,f1) -> [enabled:false] map[failover:false]
+	//test: failoverState(map,f2) -> [enabled:true] map[failover:true]
 
 }
 
 func ExampleFailover_Toggle() {
-	var v = make(url.Values)
 	prevEnabled := false
 	name := "failover-test"
 	t := newTable(true, false)
@@ -54,15 +57,12 @@ func ExampleFailover_Toggle() {
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Failover().IsEnabled())
 	prevEnabled = ctrl.Failover().IsEnabled()
 
-	v.Add("enable", "false")
-	ctrl.Failover().Signal(v)
+	ctrl.Failover().Signal(EnableValues(false))
 	ctrl2 := t.LookupByName(name)
 	fmt.Printf("test: Disable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl2.Failover().IsEnabled())
 	prevEnabled = ctrl2.Failover().IsEnabled()
 
-	v.Del("enable")
-	v.Add("enable", "true")
-	ctrl2.Failover().Signal(v)
+	ctrl2.Failover().Signal(EnableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl.Failover().IsEnabled())
 
@@ -74,7 +74,7 @@ func ExampleFailover_Toggle() {
 
 }
 
-func Example_Failover_Invoke() {
+func ExampleFailover_Invoke() {
 	name := "failover-test"
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, NewFailoverConfig(false, failoverFn)))

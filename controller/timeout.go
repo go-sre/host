@@ -74,8 +74,8 @@ func (t *timeout) Signal(values url.Values) error {
 		return nil
 	}
 	UpdateEnable(t, values)
-	if values.Has("duration") {
-		v := values.Get("duration")
+	if values.Has(DurationKey) {
+		v := values.Get(DurationKey)
 		duration, err := ParseDuration(v)
 		if err != nil {
 			return err

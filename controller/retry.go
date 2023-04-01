@@ -19,10 +19,9 @@ type Retry interface {
 	State
 	Actuator
 	IsRetryable(statusCode int) (ok bool, status string)
-	//SetRateLimiter(limit rate.Limit, burst int)
 	LimitAndBurst() (rate.Limit, int)
-	SetLimit(limit rate.Limit)
-	SetBurst(burst int)
+	//SetLimit(limit rate.Limit)
+	//SetBurst(burst int)
 }
 
 type RetryConfig struct {
@@ -88,7 +87,7 @@ func retryState(m map[string]string, r *retry, retried bool) map[string]string {
 	var limit rate.Limit = -1
 	var burst = -1
 	var name = ""
-	if r != nil {
+	if r != nil && r.IsEnabled() {
 		name = strconv.FormatBool(retried)
 		limit = r.config.Limit
 		if limit == rate.Inf {
@@ -127,6 +126,13 @@ func (r *retry) Signal(values url.Values) error {
 		return nil
 	}
 	UpdateEnable(r, values)
+	limit, burst, err := ParseLimitAndBurst(values)
+	if err != nil {
+		return nil
+	}
+	if limit != r.config.Limit || burst != r.config.Burst {
+		r.setRetryRateLimiter(limit, burst)
+	}
 	return nil
 }
 
@@ -170,6 +176,7 @@ func (r *retry) LimitAndBurst() (rate.Limit, int) {
 	return r.config.Limit, r.config.Burst
 }
 
+/*
 func (r *retry) SetLimit(limit rate.Limit) {
 	if r.config.Limit == limit {
 		return
@@ -184,6 +191,9 @@ func (r *retry) SetBurst(burst int) {
 	r.setRetryRateBurst(burst)
 }
 
+
+*/
+
 func (r *retry) enableRetry(enable bool) {
 	if r.table == nil {
 		return
@@ -197,7 +207,7 @@ func (r *retry) enableRetry(enable bool) {
 	}
 }
 
-func (r *retry) setRetryRateLimit(limit rate.Limit) {
+func (r *retry) setRetryRateLimiter(limit rate.Limit, burst int) {
 	if r.table == nil {
 		return
 	}
@@ -206,12 +216,14 @@ func (r *retry) setRetryRateLimit(limit rate.Limit) {
 	if ctrl, ok := r.table.controllers[r.name]; ok {
 		c := cloneRetry(ctrl.retry)
 		c.config.Limit = limit
+		c.config.Burst = burst
 		// Not cloning the limiter as an old reference will not cause stale data when logging
-		c.rateLimiter = rate.NewLimiter(limit, ctrl.retry.config.Burst)
+		c.rateLimiter = rate.NewLimiter(limit, burst)
 		r.table.update(r.name, cloneController[*retry](ctrl, c))
 	}
 }
 
+/*
 func (r *retry) setRetryRateBurst(burst int) {
 	if r.table == nil {
 		return
@@ -226,3 +238,6 @@ func (r *retry) setRetryRateBurst(burst int) {
 		r.table.update(r.name, cloneController[*retry](ctrl, c))
 	}
 }
+
+
+*/
