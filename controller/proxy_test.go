@@ -13,6 +13,11 @@ func Example_newProxy() {
 	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil))
 	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.pattern)
 
+	err := disabledProxy.validate()
+	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", disabledProxy.name, err)
+	err = p.validate()
+	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", p.name, err)
+
 	p2 := cloneProxy(p)
 	p2.pattern = "urn:test"
 	fmt.Printf("test: cloneProxy() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", p.pattern, p.name, p2.pattern, p2.name)
@@ -20,6 +25,8 @@ func Example_newProxy() {
 	//Output:
 	//test: newProxy() -> [name:test-route] [current:http://localhost:8080] [headers:[{name value} {name2 value2}]]
 	//test: newProxy() -> [name:test-route2] [current:https://google.com]
+	//test: validate() -> [name:[disabled]] [error:<nil>]
+	//test: validate() -> [name:test-route2] [error:<nil>]
 	//test: cloneProxy() -> [prev-config:https://google.com] [prev-name:test-route2] [curr-config:urn:test] [curr-name:test-route2]
 
 }
@@ -85,16 +92,28 @@ func ExampleProxy_SetPattern() {
 	prevPattern := ctrl.Proxy().Pattern()
 
 	var v = make(url.Values)
+	v.Add(PatternKey, "")
+	err := ctrl.Proxy().Signal(v)
+	fmt.Printf("test: Signal() -> [error:%v]\n", err)
+
+	v = make(url.Values)
+	v.Add(PatternKey, "https://google.com/{0x34567")
+	err = ctrl.Proxy().Signal(v)
+	fmt.Printf("test: Signal() -> [error:%v]\n", err)
+
+	v = make(url.Values)
 	v.Add(PatternKey, "https://google.com")
-	ctrl.Proxy().Signal(v)
+	err = ctrl.Proxy().Signal(v)
 
 	ctrl1 := t.LookupByName(name)
-	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v]\n", prevPattern, ctrl1.Proxy().Pattern())
+	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v] [error:%v]\n", prevPattern, ctrl1.Proxy().Pattern(), err)
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
 	//test: Pattern() -> [http://localhost:8080]
-	//test: SetPattern(https://google.com) -> [prev-pattern:http://localhost:8080] [curr-pattern:https://google.com]
+	//test: Signal() -> [error:invalid argument: proxy pattern is empty]
+	//test: Signal() -> [error:<nil>]
+	//test: SetPattern(https://google.com) -> [prev-pattern:http://localhost:8080] [curr-pattern:https://google.com] [error:<nil>]
 
 }
 
