@@ -63,8 +63,8 @@ func newProxy(name string, table *table, config *ProxyConfig) *proxy {
 }
 
 func (p *proxy) validate() error {
-	if len(p.pattern) == 0 && p.enabled {
-		return errors.New("invalid configuration: Proxy pattern is empty for enabled proxy")
+	if p.enabled {
+		return validatePattern(p.pattern)
 	}
 	return nil
 }
@@ -162,10 +162,7 @@ func (p *proxy) setPattern(pattern string) error {
 	if p.table == nil || p.pattern == pattern {
 		return nil
 	}
-	if len(pattern) == 0 {
-		return errors.New("invalid argument: proxy pattern is empty")
-	}
-	_, err := url.Parse(pattern)
+	err := validatePattern(pattern)
 	if err != nil {
 		return err
 	}
@@ -175,6 +172,17 @@ func (p *proxy) setPattern(pattern string) error {
 		fc := cloneProxy(ctrl.proxy)
 		fc.pattern = pattern
 		p.table.update(p.name, cloneController[*proxy](ctrl, fc))
+	}
+	return nil
+}
+
+func validatePattern(pattern string) error {
+	if len(pattern) == 0 {
+		return errors.New("invalid argument: proxy pattern is empty")
+	}
+	_, err := url.Parse(pattern)
+	if err != nil {
+		return err
 	}
 	return nil
 }

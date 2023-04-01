@@ -128,16 +128,6 @@ func newDefaultController(name string) *controller {
 	return ctrl
 }
 
-func newNilController(name string) *controller {
-	return newDefaultController(name)
-	//ctrl := new(controller)
-	//ctrl.name = name
-	//ctrl.timeout = disabledTimeout
-	//ctrl.proxy = disabledProxy
-	//ctrl.rateLimiter = disabledRateLimiter
-	//return ctrl
-}
-
 func (c *controller) validate(egress bool) error {
 	if !egress {
 		if c.failover != nil {

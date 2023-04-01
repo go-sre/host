@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"net/url"
 	"strconv"
 )
@@ -51,9 +50,9 @@ func newFailover(name string, table *table, config *FailoverConfig) *failover {
 }
 
 func (f *failover) validate() error {
-	if f.invoke == nil {
-		return errors.New("invalid configuration: Failover FailureInvoke function is nil")
-	}
+	//if f.invoke == nil {
+	//	return errors.New("invalid configuration: Failover FailureInvoke function is nil")
+	//}
 	return nil
 }
 

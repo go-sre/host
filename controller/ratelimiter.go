@@ -20,9 +20,8 @@ type RateLimiter interface {
 	Actuator
 	Allow() bool
 	StatusCode() int
-	LimitAndBurst() (rate.Limit, int)
-	SetLimit(limit rate.Limit)
-	SetBurst(burst int)
+	//SetLimit(limit rate.Limit)
+	//SetBurst(burst int)
 }
 
 type RateLimiterConfig struct {
@@ -72,6 +71,7 @@ func newRateLimiter(name string, table *table, config *RateLimiterConfig) *rateL
 	return t
 }
 
+/*
 func validateLimiter(max *rate.Limit, burst *int) {
 	if max != nil && *max < 0 {
 		*max = rate.Inf
@@ -80,6 +80,8 @@ func validateLimiter(max *rate.Limit, burst *int) {
 		*burst = DefaultBurst
 	}
 }
+
+*/
 
 func (r *rateLimiter) validate() error {
 	if r.config.Limit < 0 {
@@ -145,23 +147,27 @@ func (r *rateLimiter) StatusCode() int {
 	return r.config.StatusCode
 }
 
-func (r *rateLimiter) LimitAndBurst() (rate.Limit, int) {
+/*
+func (r *rateLimiter) limitAndBurst() (rate.Limit, int) {
 	return r.config.Limit, r.config.Burst
 }
 
-func (r *rateLimiter) SetLimit(limit rate.Limit) {
+func (r *rateLimiter) setLimit(limit rate.Limit) {
 	if r.config.Limit == limit {
 		return
 	}
 	r.setRateLimit(limit)
 }
 
-func (r *rateLimiter) SetBurst(burst int) {
+func (r *rateLimiter) setBurst(burst int) {
 	if r.config.Burst == burst {
 		return
 	}
 	r.setRateBurst(burst)
 }
+
+
+*/
 
 /*
 func (r *rateLimiter) SetRateLimiter(limit rate.Limit, burst int) {

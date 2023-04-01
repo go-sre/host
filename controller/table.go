@@ -80,7 +80,7 @@ func newTable(egress, allowDefault bool) *table {
 	t.controllers = make(map[string]*controller, 100)
 	t.hostCtrl = newDefaultController(HostControllerName)
 	t.defaultCtrl = newDefaultController(DefaultControllerName)
-	t.nilCtrl = newNilController(NilControllerName)
+	t.nilCtrl = newDefaultController(NilControllerName)
 	return t
 }
 
