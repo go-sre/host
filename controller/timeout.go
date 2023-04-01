@@ -22,7 +22,7 @@ type TimeoutConfig struct {
 	Duration   time.Duration
 }
 
-var disabledTimeout = newTimeout("[disabled]", nil, NewTimeoutConfig(false, 0, -1))
+var disabledTimeout = newTimeout("[disabled]", nil, NewTimeoutConfig(false, 0, 1))
 
 func NewTimeoutConfig(enabled bool, statusCode int, duration time.Duration) *TimeoutConfig {
 	if statusCode <= 0 {
@@ -80,6 +80,9 @@ func (t *timeout) Signal(values url.Values) error {
 		if err != nil {
 			return err
 		}
+		if duration <= 0 {
+			return errors.New("invalid configuration: Timeout duration is <= 0")
+		}
 		t.setTimeout(duration)
 	}
 	return nil
@@ -126,7 +129,7 @@ func (t *timeout) enableTimeout(enable bool) {
 }
 
 func (t *timeout) setTimeout(duration time.Duration) {
-	if t.table == nil || t.config.Duration == duration || duration <= 0 {
+	if t.table == nil || t.config.Duration == duration {
 		return
 	}
 	t.table.mu.Lock()

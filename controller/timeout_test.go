@@ -8,6 +8,14 @@ import (
 
 func Example_newTimeout() {
 	tbl := newTable(true, false)
+
+	errt := newTimeout("error-timeout", tbl, NewTimeoutConfig(true, 0, 0))
+	err := errt.validate()
+	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", errt.name, err)
+
+	err = disabledTimeout.validate()
+	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", disabledTimeout.name, err)
+
 	t := newTimeout("test-route", tbl, NewTimeoutConfig(true, 0, 100))
 	fmt.Printf("test: newTimeout() -> [name:%v] [current:%v]\n", t.name, t.config.Duration)
 
@@ -19,6 +27,8 @@ func Example_newTimeout() {
 	fmt.Printf("test: cloneTimeout() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", t.config, t.name, t2.config, t2.name)
 
 	//Output:
+	//test: validate() -> [name:error-timeout] [error:invalid configuration: Timeout duration is <= 0]
+	//test: validate() -> [name:[disabled]] [error:<nil>]
 	//test: newTimeout() -> [name:test-route] [current:100ns]
 	//test: newTimeout() -> [name:test-route2] [current:2s]
 	//test: cloneTimeout() -> [prev-config:{true 503 2s}] [prev-name:test-route2] [curr-config:{true 503 1s}] [curr-name:test-route2]
@@ -55,19 +65,25 @@ func ExampleTimeout_SetTimeout() {
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
+	v.Add(DurationKey, "0")
+	err := ctrl.Timeout().Signal(v)
+	fmt.Printf("test: Signal(0) -> [%v]\n", err)
+
 	d := ctrl.Timeout().Duration()
 	fmt.Printf("test: Duration() -> [%v]\n", d)
 
+	v.Del(DurationKey)
 	v.Add(DurationKey, "3s")
-	ctrl.Timeout().Signal(v)
+	err = ctrl.Timeout().Signal(v)
 	ctrl = t.LookupByName(name)
 	d = ctrl.Timeout().Duration()
-	fmt.Printf("test: Duration() -> [%v]\n", d)
+	fmt.Printf("test: Duration() -> [%v][error:%v]\n", d, err)
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
+	//test: Signal(0) -> [invalid configuration: Timeout duration is <= 0]
 	//test: Duration() -> [1.5s]
-	//test: Duration() -> [3s]
+	//test: Duration() -> [3s][error:<nil>]
 
 }
 
