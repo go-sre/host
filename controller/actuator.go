@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/time/rate"
-	"net/http"
 	"net/url"
 	"strconv"
 )
@@ -29,37 +28,6 @@ const (
 
 type Actuator interface {
 	Signal(values url.Values) error
-}
-
-func boolValue(value string) (bool, error) {
-	if len(value) == 0 {
-		return false, errors.New("value is empty")
-	}
-	if value == "0" {
-		return false, nil
-	}
-	if value == "1" {
-		return true, nil
-	}
-	return false, errors.New(fmt.Sprintf("value is invalid: %v", value))
-}
-
-func intValue(value string) (int, error) {
-	if len(value) == 0 {
-		return -1, errors.New("value is empty")
-	}
-	return strconv.Atoi(value)
-}
-
-func urlValue(value string) (*url.URL, error) {
-	if len(value) == 0 {
-		return nil, errors.New("value is empty")
-	}
-	return url.Parse(value)
-}
-
-func parseTest(req *http.Request) {
-	req.URL.Query()
 }
 
 func UpdateEnable(s State, values url.Values) error {
@@ -105,8 +73,8 @@ func ParseLimitAndBurst(values url.Values) (rate.Limit, int, error) {
 			if err != nil {
 				return limit, burst, err
 			}
-			if temp < 0 {
-				return limit, burst, errors.New(fmt.Sprintf("invalid argument: limit value is < 0 [%v]", temp))
+			if temp <= 0 {
+				return limit, burst, errors.New(fmt.Sprintf("invalid argument: limit value is <= 0 [%v]", temp))
 			}
 			limit = rate.Limit(temp)
 		}
@@ -118,8 +86,8 @@ func ParseLimitAndBurst(values url.Values) (rate.Limit, int, error) {
 			if err != nil {
 				return limit, burst, err
 			}
-			if temp < 0 {
-				return limit, burst, errors.New(fmt.Sprintf("invalid argument: burst value is < 0 [%v]", temp))
+			if temp <= 0 {
+				return limit, burst, errors.New(fmt.Sprintf("invalid argument: burst value is <= 0 [%v]", temp))
 			}
 			burst = temp
 		}

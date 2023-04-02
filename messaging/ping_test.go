@@ -43,7 +43,7 @@ func ExamplePing() {
 
 	//Output:
 	//test: Ping(good) -> [OK] [duration:0s]
-	//[[] github.com/idiomatic-go/motif/messaging/ping [ping response time out: [urn:ping:bad]]]
+	//[[] github.com/go-sre/host/messaging/ping [ping response time out: [urn:ping:bad]]]
 	//test: Ping(bad) -> [DeadlineExceeded] [duration:0s]
 	//test: Ping(error) -> [Internal [ping depends error message]] [duration:0s]
 	//test: Ping(delay) -> [OK] [duration:0s]

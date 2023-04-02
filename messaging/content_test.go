@@ -14,14 +14,14 @@ var msgTest = Message{To: "to-uri", From: "from-uri", Content: []any{
 	Credentials(func() (username, password string, err error) { return "", "", nil }),
 	time.Second,
 	nil,
-	runtime.Handle[runtime.DebugError](),
+	//runtime.Handle[runtime.DebugError](),
 	errors.New("this is a content error message"),
 	func() bool { return false },
 	runtime.NewStatusError("location", errors.New("error message")).SetDuration(time.Second * 2),
 	ControllerApply(func(ctx context.Context, statusCode func() int, uri, requestId, method string) (func(), context.Context, bool) {
 		return func() {}, ctx, false
 	}),
-	runtime.HandleWithContext[runtime.DebugError](),
+	//runtime.HandleWithContext[runtime.DebugError](),
 	DatabaseUrl{"postgres://username:password@database.cloud.timescale.com/database?sslmode=require"},
 }}
 

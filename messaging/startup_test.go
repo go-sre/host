@@ -89,7 +89,7 @@ func ExampleStartup_Failure() {
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
 	//Output:
-	//[[] github.com/idiomatic-go/motif/messaging/startup [startup failure error message]]
+	//[[] github.com/go-sre/host/messaging/startup [startup failure error message]]
 	//test: Startup() -> [Internal]
 
 }

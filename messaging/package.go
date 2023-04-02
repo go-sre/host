@@ -4,4 +4,4 @@ import "reflect"
 
 type pkg struct{}
 
-var pkgPath = reflect.TypeOf(any(pkg{})).PkgPath()
+var PkgUrl = reflect.TypeOf(any(pkg{})).PkgPath()

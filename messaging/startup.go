@@ -9,7 +9,7 @@ import (
 
 type messageMap map[string]Message
 
-var startupLocation = pkgPath + "/startup"
+var startupLocation = PkgUrl + "/startup"
 
 var directory = NewEntryDirectory()
 
@@ -66,7 +66,7 @@ func Startup[E runtime.ErrorHandler, O runtime.OutputHandler](duration time.Dura
 		handleErrors[E](failures, cache)
 		return runtime.NewStatusCode(runtime.StatusInternal)
 	}
-	return e.Handle(startupLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))).SetCode(runtime.StatusDeadlineExceeded)
+	return e.Handle(nil, startupLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))).SetCode(runtime.StatusDeadlineExceeded)
 }
 
 func createToSend(cm ContentMap, fn MessageHandler) messageMap {
@@ -97,7 +97,7 @@ func handleErrors[E runtime.ErrorHandler](failures []string, cache *MessageCache
 			continue
 		}
 		if msg.Status != nil {
-			e.HandleStatus(msg.Status)
+			e.Handle(nil, msg.Status.Location(), msg.Status.Errors()...)
 		}
 	}
 }

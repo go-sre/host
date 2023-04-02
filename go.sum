@@ -4,8 +4,8 @@ github.com/felixge/httpsnoop v1.0.3 h1:s/nj+GCswXYzN5v2DpNMuMQYe+0DDwt5WVCU6CWBd
 github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a h1:v6zMvHuY9yue4+QkG/HQ/W67wvtQmWJ4SDo9aK/GIno=
 github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a/go.mod h1:I79BieaU4fxrw4LMXby6q5OS9XnoR9UIKLOzDFjUmuw=
-github.com/go-sre/core v0.0.0-20230324100724-3810a3e68a8b h1:RCw+XMvUDD6OZyB6Pn0ya08t2OxSM5ltTYjcHELEvi8=
-github.com/go-sre/core v0.0.0-20230324100724-3810a3e68a8b/go.mod h1:OVoGBu0ZwcDqFzawayVvY3LO/3g7xW61Ggra39vqQhQ=
+github.com/go-sre/core v0.0.0-20230402192255-9f18e2cf2137 h1:Pb2F/cFgfSjLqezeRfSDUvAflTH3J1fFMN/EH/98Y9c=
+github.com/go-sre/core v0.0.0-20230402192255-9f18e2cf2137/go.mod h1:OVoGBu0ZwcDqFzawayVvY3LO/3g7xW61Ggra39vqQhQ=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
