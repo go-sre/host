@@ -75,15 +75,16 @@ func (t *timeout) Signal(values url.Values) error {
 	}
 	UpdateEnable(t, values)
 	if values.Has(DurationKey) {
-		v := values.Get(DurationKey)
-		duration, err := ParseDuration(v)
+		duration, err := ParseDuration(values.Get(DurationKey))
 		if err != nil {
 			return err
 		}
 		if duration <= 0 {
 			return errors.New("invalid configuration: Timeout duration is <= 0")
 		}
-		t.setTimeout(duration)
+		if duration != t.Duration() {
+			t.setTimeout(duration)
+		}
 	}
 	return nil
 }
