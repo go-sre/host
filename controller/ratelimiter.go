@@ -129,7 +129,9 @@ func (r *rateLimiter) Signal(values url.Values) error {
 		if burst == -1 {
 			burst = r.config.Burst
 		}
-		r.setRateLimiter(limit, burst)
+		if r.config.Limit != limit || r.config.Burst != burst {
+			r.setRateLimiter(limit, burst)
+		}
 	}
 	return nil
 }
