@@ -14,7 +14,7 @@ func ControllerHttpHostMetricsHandler(appHandler http.Handler, msg string) http.
 		ctrl := controller.IngressTable().Host()
 		var m httpsnoop.Metrics
 
-		if rlc, ok := ctrl.RateLimiter(); ok && !rlc.Allow() {
+		if rlc := ctrl.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
 			ctrl.LogHttpIngress(start, time.Since(start), r, rlc.StatusCode(), 0, controller.RateLimitFlag)
 			return
 		}
