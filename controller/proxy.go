@@ -83,7 +83,10 @@ func (p *proxy) Signal(values url.Values) error {
 	}
 	UpdateEnable(p, values)
 	if values.Has(PatternKey) {
-		return p.setPattern(values.Get(PatternKey))
+		v := values.Get(PatternKey)
+		if v != p.pattern {
+			return p.setPattern(v)
+		}
 	}
 	return nil
 }
