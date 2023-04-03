@@ -69,12 +69,12 @@ func ExampleRateLimiter_Toggle() {
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.RateLimiter().IsEnabled())
 	prevEnabled := ctrl.RateLimiter().IsEnabled()
 
-	ctrl.RateLimiter().Signal(EnableValues(false))
+	ctrl.RateLimiter().Signal(enableValues(false))
 	ctrl1 := t.LookupByName(name)
 	fmt.Printf("test: Disable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.RateLimiter().IsEnabled())
 	prevEnabled = ctrl1.RateLimiter().IsEnabled()
 
-	ctrl1.RateLimiter().Signal(EnableValues(true))
+	ctrl1.RateLimiter().Signal(enableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl.RateLimiter().IsEnabled())
 

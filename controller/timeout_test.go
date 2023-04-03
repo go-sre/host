@@ -6,6 +6,16 @@ import (
 	"time"
 )
 
+func enableValues(enable bool) url.Values {
+	v := make(url.Values)
+	if enable {
+		v.Add(EnableKey, TrueValue)
+	} else {
+		v.Add(EnableKey, FalseValue)
+	}
+	return v
+}
+
 func Example_newTimeout() {
 	tbl := newTable(true, false)
 
@@ -98,11 +108,11 @@ func ExampleTimeout_Toggle() {
 	ctrl := t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
-	ctrl.Timeout().Signal(EnableValues(false))
+	ctrl.Timeout().Signal(enableValues(false))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 
-	ctrl.Timeout().Signal(EnableValues(true))
+	ctrl.Timeout().Signal(enableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Timeout().IsEnabled())
 

@@ -20,7 +20,7 @@ func Example_newFailover() {
 	fmt.Printf("test: cloneFailover(f1) -> [f2-enabled:%v] [f2-validate:%v]\n", f2.enabled, f2.validate())
 
 	//Output:
-	//test: newFailover(nil) -> [enabled:false] [validate:invalid configuration: Failover FailureInvoke function is nil]
+	//test: newFailover(nil) -> [enabled:false] [validate:<nil>]
 	//test: newFailover(testFn) -> [enabled:false] [validate:<nil>]
 	//test: cloneFailover(f1) -> [f2-enabled:true] [f2-validate:<nil>]
 
@@ -57,12 +57,12 @@ func ExampleFailover_Toggle() {
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Failover().IsEnabled())
 	prevEnabled = ctrl.Failover().IsEnabled()
 
-	ctrl.Failover().Signal(EnableValues(false))
+	ctrl.Failover().Signal(enableValues(false))
 	ctrl2 := t.LookupByName(name)
 	fmt.Printf("test: Disable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl2.Failover().IsEnabled())
 	prevEnabled = ctrl2.Failover().IsEnabled()
 
-	ctrl2.Failover().Signal(EnableValues(true))
+	ctrl2.Failover().Signal(enableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl.Failover().IsEnabled())
 

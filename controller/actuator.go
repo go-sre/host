@@ -9,19 +9,22 @@ import (
 )
 
 const (
-	RateLimitKey      = "limit"
-	RateBurstKey      = "burst"
-	DurationKey       = "duration"
-	EnableKey         = "enable"
-	PatternKey        = "pattern"
-	FalseValue        = "false"
-	TrueValue         = "true"
-	TrafficKey        = "traffic"
-	RouteKey          = "route"
-	BehaviorKey       = "behavior"
+	TrafficKey  = "traffic"
+	RouteKey    = "route"
+	BehaviorKey = "behavior"
+
+	RateLimitKey = "limit"
+	RateBurstKey = "burst"
+	DurationKey  = "duration"
+	EnableKey    = "enable"
+	PatternKey   = "pattern"
+
+	FalseValue = "false"
+	TrueValue  = "true"
+
 	BehaviorTimeout   = "timeout"
 	BehaviorRetry     = "retry"
-	BehaviorRateLimit = "ratelimit"
+	BehaviorRateLimit = "rate-limit"
 	BehaviorProxy     = "proxy"
 	BehaviorFailover  = "failover"
 )
@@ -67,16 +70,6 @@ func UpdateEnable(s State, values url.Values) error {
 		}
 	}
 	return nil
-}
-
-func EnableValues(enable bool) url.Values {
-	v := make(url.Values)
-	if enable {
-		v.Add(EnableKey, TrueValue)
-	} else {
-		v.Add(EnableKey, FalseValue)
-	}
-	return v
 }
 
 func ParseLimitAndBurst(values url.Values) (rate.Limit, int, error) {

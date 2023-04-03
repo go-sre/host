@@ -129,7 +129,7 @@ func ExampleProxy_Toggle() {
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.t().proxy.IsEnabled())
 	prevEnabled := ctrl.Proxy().IsEnabled()
 
-	ctrl.Proxy().Signal(EnableValues(true))
+	ctrl.Proxy().Signal(enableValues(true))
 	ctrl1 := t.LookupByName(name)
 	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.t().proxy.IsEnabled())
 

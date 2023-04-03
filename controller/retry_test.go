@@ -55,12 +55,12 @@ func ExampleRetry_Toggle() {
 	fmt.Printf("test: IsEnabled() -> [%v]\n", ctrl.Retry().IsEnabled())
 	prevEnabled := ctrl.Retry().IsEnabled()
 
-	ctrl.Retry().Signal(EnableValues(false))
+	ctrl.Retry().Signal(enableValues(false))
 	ctrl1 := t.LookupByName(name)
 	fmt.Printf("test: Disable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.Retry().IsEnabled())
 	prevEnabled = ctrl1.Retry().IsEnabled()
 
-	ctrl1.Retry().Signal(EnableValues(true))
+	ctrl1.Retry().Signal(enableValues(true))
 	ctrl = t.LookupByName(name)
 	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl.Retry().IsEnabled())
 	prevEnabled = ctrl.Retry().IsEnabled()
