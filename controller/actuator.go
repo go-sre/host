@@ -9,25 +9,51 @@ import (
 )
 
 const (
-	RateLimitKey  = "limit"
-	RateBurstKey  = "burst"
-	DurationKey   = "duration"
-	EnableKey     = "enable"
-	PatternKey    = "pattern"
-	FalseValue    = "false"
-	TrueValue     = "true"
-	TrafficKey    = "traffic"
-	ControllerKey = "controller"
-	MethodKey     = "method"
-	ActionKey     = "action"
-	EnableAction  = "enable"
-	SetAction     = "set"
-	IncAction     = "inc"
-	DecAction     = "dec"
+	RateLimitKey      = "limit"
+	RateBurstKey      = "burst"
+	DurationKey       = "duration"
+	EnableKey         = "enable"
+	PatternKey        = "pattern"
+	FalseValue        = "false"
+	TrueValue         = "true"
+	TrafficKey        = "traffic"
+	ControllerKey     = "controller"
+	BehaviorKey       = "behavior"
+	MethodKey         = "method"
+	ActionKey         = "action"
+	EnableAction      = "enable"
+	SetAction         = "set"
+	IncAction         = "inc"
+	DecAction         = "dec"
+	BehaviorTimeout   = "timeout"
+	BehaviorRetry     = "retry"
+	BehaviorRateLimit = "ratelimit"
+	BehaviorProxy     = "proxy"
+	BehaviorFailover  = "failover"
 )
 
 type Actuator interface {
 	Signal(values url.Values) error
+}
+
+func IsEgressTraffic(values url.Values) bool {
+	if values == nil {
+		return false
+	}
+	if values.Get(TrafficKey) == EgressTraffic {
+		return true
+	}
+	return false
+}
+
+func IsIngressTraffic(values url.Values) bool {
+	if values == nil {
+		return false
+	}
+	if values.Get(TrafficKey) == IngressTraffic {
+		return true
+	}
+	return false
 }
 
 func UpdateEnable(s State, values url.Values) error {

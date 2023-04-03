@@ -3,8 +3,15 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
+
+func behaviorValues(behavior string) url.Values {
+	v := make(url.Values)
+	v.Add(BehaviorKey, behavior)
+	return v
+}
 
 func ExampleController_newController() {
 	t := newTable(true, false)
@@ -72,7 +79,27 @@ func ExampleController_newController_Error() {
 	//test: newController() -> [errs:[]]
 	//test: newController() -> [errs:[invalid configuration: Retry status codes are empty]]
 	//test: newController() -> [errs:[invalid configuration: Timeout duration is <= 0]]
-	//test: newController() -> [errs:[invalid configuration: Failover FailureInvoke function is nil]]
-	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is < 0]]
+	//test: newController() -> [errs:[]]
+	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is <= 0]]
 
+}
+
+func ExampleController_Signal() {
+	t := newTable(false, false)
+	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
+
+	ctrl, errs := newController(route, t)
+	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
+
+	err := ctrl.Signal(behaviorValues(BehaviorTimeout))
+	fmt.Printf("test: Signal(timeout) -> [err:%v]\n", err)
+
+	err = ctrl.Signal(behaviorValues("invalid-behavior"))
+	fmt.Printf("test: Signal(timeout) -> [err:%v]\n", err)
+
+	//Output:
+	//test: newController() -> [errs:[]]
+	//test: Signal(timeout) -> [err:<nil>]
+	//test: Signal(timeout) -> [err:invalid argument: behavior [invalid-behavior] is not supported]
+	
 }

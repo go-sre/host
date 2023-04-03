@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"net/http"
 	"net/url"
@@ -48,6 +49,7 @@ type Controller interface {
 type controller struct {
 	name        string
 	ping        bool
+	tbl         *table
 	timeout     *timeout
 	rateLimiter *rateLimiter
 	failover    *failover
@@ -79,6 +81,7 @@ func newController(route Route, t *table) (*controller, []error) {
 	var err error
 	ctrl := newDefaultController(route.Name)
 	ctrl.ping = route.Ping
+	ctrl.tbl = t
 	if route.Timeout != nil {
 		ctrl.timeout = newTimeout(route.Name, t, route.Timeout)
 		err = ctrl.timeout.validate()
@@ -174,7 +177,27 @@ func (c *controller) Proxy() Proxy {
 }
 
 func (c *controller) Signal(values url.Values) error {
-	return nil
+	if values == nil {
+		return nil
+	}
+	switch values.Get(BehaviorKey) {
+	case BehaviorTimeout:
+		return c.Timeout().Signal(values)
+		break
+	case BehaviorRetry:
+		return c.Retry().Signal(values)
+		break
+	case BehaviorRateLimit:
+		return c.RateLimiter().Signal(values)
+		break
+	case BehaviorProxy:
+		return c.Proxy().Signal(values)
+		break
+	case BehaviorFailover:
+		return c.Failover().Signal(values)
+		break
+	}
+	return errors.New(fmt.Sprintf("invalid argument: behavior [%s] is not supported", values.Get(BehaviorKey)))
 }
 
 func (c *controller) t() *controller {
