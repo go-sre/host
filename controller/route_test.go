@@ -59,10 +59,10 @@ func ExampleConfig_Marshal() {
 			StatusCode: 503,
 		},
 		Retry: &RetryConfig{
-			Limit: 100,
-			Burst: 33,
-			Wait:  500,
-			Codes: []int{503, 504},
+			Limit:       100,
+			Burst:       33,
+			Wait:        500,
+			StatusCodes: []int{503, 504},
 		},
 		//Failover: &FailoverConfig{
 		//	Enabled: false,

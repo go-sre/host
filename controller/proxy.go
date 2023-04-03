@@ -162,7 +162,7 @@ func (p *proxy) enableProxy(enabled bool) {
 }
 
 func (p *proxy) setPattern(pattern string) error {
-	if p.table == nil || p.pattern == pattern {
+	if p.table == nil {
 		return nil
 	}
 	err := validatePattern(pattern)

@@ -41,7 +41,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 	if err != nil {
 		return resp, err
 	}
-	if rc, ok := ctrl.Retry(); ok {
+	if rc := ctrl.Retry(); rc.IsEnabled() {
 		prevFlags := statusFlags
 		retry, statusFlags = rc.IsRetryable(resp.StatusCode)
 		if retry {
