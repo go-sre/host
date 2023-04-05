@@ -53,23 +53,43 @@ func IsIngressTraffic(values url.Values) bool {
 	return false
 }
 
-func UpdateEnable(s State, values url.Values) error {
-	if s == nil || values == nil {
-		return errors.New("invalid argument: state or values is nil")
+func IsDisable(values url.Values) bool {
+	if values == nil {
+		return false
 	}
-	if values.Has(EnableKey) {
-		v := values.Get(EnableKey)
-		if v == TrueValue {
-			s.Enable()
-		} else {
-			if v == FalseValue {
-				s.Disable()
-			} else {
-				return errors.New(fmt.Sprintf("invalid argument: enable value is invalid : [%v]", v))
-			}
-		}
+	if values.Get(EnableKey) == FalseValue {
+		return true
 	}
-	return nil
+	return false
+}
+
+func IsEnable(values url.Values) bool {
+	return !IsDisable(values)
+}
+
+func NewValues(key, value string) url.Values {
+	values := url.Values{}
+	values.Set(key, value)
+	return values
+}
+
+func UpdateEnable(s State, values url.Values) (stateChange bool, err error) {
+	if s == nil {
+		return false, errors.New("invalid argument: state is nil")
+	}
+	if !values.Has(EnableKey) {
+		return false, nil
+	}
+	v := values.Get(EnableKey)
+	if v == TrueValue && !s.IsEnabled() {
+		s.Enable()
+		return true, nil
+	}
+	if v == FalseValue && s.IsEnabled() {
+		s.Disable()
+		return true, nil
+	}
+	return false, errors.New(fmt.Sprintf("invalid argument: enable value is invalid : [%v]", v))
 }
 
 func ParseLimitAndBurst(values url.Values) (rate.Limit, int, error) {

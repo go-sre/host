@@ -81,12 +81,26 @@ func (p *proxy) Signal(values url.Values) error {
 	if values == nil {
 		return nil
 	}
-	UpdateEnable(p, values)
+	if IsDisable(values) {
+		p.Disable()
+	}
 	if values.Has(PatternKey) {
 		v := values.Get(PatternKey)
-		if v != p.config.Pattern {
-			return p.setPattern(v)
+		if len(v) == 0 {
+			return errors.New("invalid configuration: proxy pattern is empty")
 		}
+		if v != p.config.Pattern {
+			err := p.setPattern(v)
+			if err != nil {
+				return err
+			}
+			if p.config.Action != nil {
+				return p.config.Action.Signal(NewValues(PatternKey, v))
+			}
+		}
+	}
+	if IsEnable(values) {
+		p.Enable()
 	}
 	return nil
 }

@@ -124,7 +124,7 @@ func ExampleProxy_SetPattern() {
 	//Output:
 	//test: Add() -> [[]] [count:1]
 	//test: Pattern() -> [http://localhost:8080]
-	//test: Signal() -> [error:invalid argument: proxy pattern is empty]
+	//test: Signal() -> [error:invalid configuration: proxy pattern is empty]
 	//test: Signal() -> [error:<nil>]
 	//test: SetPattern(https://google.com) -> [prev-pattern:http://localhost:8080] [curr-pattern:https://google.com] [error:<nil>]
 
@@ -176,5 +176,5 @@ func ExampleProxy_Action() {
 	//test: IsEnabled() -> [true] [action:true]
 	//test: Action().Signal(nil) -> [test action error]
 	//test: Action2().Signal(nil) -> [test action 2 error]
-	
+
 }
