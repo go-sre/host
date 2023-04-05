@@ -86,6 +86,17 @@ func newTable(egress, allowDefault bool) *table {
 
 func (t *table) isEgress() bool { return t.egress }
 
+func (t *table) SetAction(name string, action Actuator) error {
+	ctrl := t.LookupByName(name)
+	if ctrl == nil {
+		return errors.New("invalid controller name: " + name)
+	}
+	if action == nil {
+		return errors.New(fmt.Sprintf("invalid action: nil [%v]", name))
+	}
+	return ctrl.Proxy().SetAction(action)
+}
+
 func (t *table) SetHttpMatcher(fn HttpMatcher) {
 	if fn == nil {
 		return
