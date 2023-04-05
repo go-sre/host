@@ -147,15 +147,15 @@ func (t *table) SetDefaultController(route Route) []error {
 	if route.Name == "" {
 		route.Name = DefaultControllerName
 	}
-	act, errs := newController(route, t)
+	ctrl, errs := newController(route, t)
 	if len(errs) > 0 {
 		return errs
 	}
-	err := act.validate(t.egress)
+	err := ctrl.validate(t.egress)
 	if err != nil {
 		return []error{err}
 	}
-	t.defaultCtrl = act
+	t.defaultCtrl = ctrl
 	return nil
 }
 
@@ -228,18 +228,18 @@ func (t *table) AddController(route Route) []error {
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	act, errs := newController(route, t)
+	ctrl, errs := newController(route, t)
 	if len(errs) > 0 {
 		return errs
 	}
-	err := act.validate(t.egress)
+	err := ctrl.validate(t.egress)
 	if err != nil {
 		return []error{err}
 	}
 	if _, ok := t.controllers[route.Name]; ok {
 		return []error{errors.New(fmt.Sprintf("invalid argument: route name is a duplicate [%v]", route.Name))}
 	}
-	t.controllers[route.Name] = act
+	t.controllers[route.Name] = ctrl
 	return nil
 }
 

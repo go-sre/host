@@ -49,15 +49,15 @@ func ExampleTable_SetDefaultController_Ingress() {
 func ExampleTable_SetHostController_Egress() {
 	t := newTable(true, false)
 
-	a := t.Host()
-	fmt.Printf("test: Host() -> [name:%v] [timeout-controller:%v]\n", a.Name(), a.t().timeout)
+	ctrl := t.Host()
+	fmt.Printf("test: Host() -> [name:%v] [timeout-controller:%v]\n", ctrl.Name(), ctrl.Timeout().IsEnabled())
 
 	err := t.SetHostController(newRoute("", NewTimeoutConfig(true, 504, time.Second)))
-	//a = t.Host()
+	ctrl = t.Host()
 	fmt.Printf("test: SetHostController(NewTimeoutConfig()) -> %v\n", err)
 
 	//Output:
-	//test: Host() -> [name:host] [timeout-controller:<nil>]
+	//test: Host() -> [name:host] [timeout-controller:false]
 	//test: SetHostController(NewTimeoutConfig()) -> [host controller configuration is not valid for egress traffic]
 
 }

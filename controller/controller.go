@@ -121,15 +121,15 @@ func newDefaultController(name string) *controller {
 
 func (c *controller) validate(egress bool) error {
 	if !egress {
-		if c.retry != nil {
+		if c.retry.IsEnabled() {
 			return errors.New("invalid configuration: Retry is not valid for ingress traffic")
 		}
 		if c.name == HostControllerName {
-			if c.timeout != nil {
+			if c.timeout.IsEnabled() {
 				return errors.New("invalid configuration: Timeout is not valid for host controller")
 			}
 		} else {
-			if c.rateLimiter != nil {
+			if c.rateLimiter.IsEnabled() {
 				return errors.New("invalid configuration: RateLimiter is not valid for ingress traffic")
 			}
 		}
