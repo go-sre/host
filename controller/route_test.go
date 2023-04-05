@@ -82,10 +82,10 @@ func ExampleNewRouteFromConfig() {
 		},
 		RateLimiter: nil,
 		Retry: &RetryConfigJson{
-			Limit: 100,
-			Burst: 25,
-			Wait:  "5x",
-			Codes: nil,
+			Limit:       100,
+			Burst:       25,
+			Wait:        "5x",
+			StatusCodes: nil,
 		},
 	}
 	route, err := NewRouteFromConfig(config)

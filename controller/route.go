@@ -24,11 +24,11 @@ type TimeoutConfigJson struct {
 }
 
 type RetryConfigJson struct {
-	Enabled bool
-	Limit   rate.Limit
-	Burst   int
-	Wait    string
-	Codes   []int
+	Enabled     bool
+	Limit       rate.Limit
+	Burst       int
+	Wait        string
+	StatusCodes []int
 }
 
 type RouteConfig struct {
@@ -94,7 +94,7 @@ func NewRouteFromConfig(config RouteConfig) (Route, error) {
 		if err != nil {
 			return Route{}, err
 		}
-		route.Retry = NewRetryConfig(config.Retry.Enabled, config.Retry.Limit, config.Retry.Burst, duration, config.Retry.Codes)
+		route.Retry = NewRetryConfig(config.Retry.Enabled, config.Retry.Limit, config.Retry.Burst, duration, config.Retry.StatusCodes)
 	}
 	return route, nil
 }
