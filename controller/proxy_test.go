@@ -104,19 +104,13 @@ func ExampleProxy_SetPattern() {
 	fmt.Printf("test: Pattern() -> [%v]\n", ctrl.Proxy().Pattern())
 	prevPattern := ctrl.Proxy().Pattern()
 
-	var v = make(url.Values)
-	v.Add(PatternKey, "")
-	err := ctrl.Proxy().Signal(v)
+	err := ctrl.Proxy().Signal(NewValues(PatternKey, ""))
 	fmt.Printf("test: Signal() -> [error:%v]\n", err)
 
-	v = make(url.Values)
-	v.Add(PatternKey, "https://google.com/{0x34567")
-	err = ctrl.Proxy().Signal(v)
+	err = ctrl.Proxy().Signal(NewValues(PatternKey, "https://google.com/{0x34567"))
 	fmt.Printf("test: Signal() -> [error:%v]\n", err)
 
-	v = make(url.Values)
-	v.Add(PatternKey, "https://google.com")
-	err = ctrl.Proxy().Signal(v)
+	err = ctrl.Proxy().Signal(NewValues(PatternKey, "https://google.com"))
 
 	ctrl1 := t.LookupByName(name)
 	fmt.Printf("test: SetPattern(https://google.com) -> [prev-pattern:%v] [curr-pattern:%v] [error:%v]\n", prevPattern, ctrl1.Proxy().Pattern(), err)
@@ -177,4 +171,58 @@ func ExampleProxy_Action() {
 	//test: Action().Signal(nil) -> [test action error]
 	//test: Action2().Signal(nil) -> [test action 2 error]
 
+}
+
+func ExampleProxy_SetAction() {
+	var action testAction
+	name := "test-route"
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, nil)
+	t := newTable(true, false)
+
+	ok := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
+
+	ctrl := t.LookupByName(name)
+	fmt.Printf("test: IsEnabled() -> [%v] [action:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil)
+
+	t.SetAction(name, action)
+	ctrl = t.LookupByName(name)
+	fmt.Printf("test: IsEnabled() -> [%v] [action:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil)
+
+	fmt.Printf("test: Action().Signal(nil) -> [%v]\n", ctrl.Proxy().Action().Signal(nil))
+
+	//Output:
+	//test: Add() -> [[]] [count:1]
+	//test: IsEnabled() -> [true] [action:false]
+	//test: IsEnabled() -> [true] [action:true]
+	//test: Action().Signal(nil) -> [test action error]
+
+}
+
+func ExampleProxy_SignalAction() {
+	var action testAction
+	name := "test-route"
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action)
+	t := newTable(true, false)
+
+	ok := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
+
+	ctrl := t.LookupByName(name)
+	fmt.Printf("test: IsEnabled() -> [%v] [action:%v] [pattern:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil, ctrl.Proxy().Pattern())
+
+	err := ctrl.Proxy().Signal(NewValues(PatternKey, "urn:postgresql:host:path"))
+	ctrl = t.LookupByName(name)
+	fmt.Printf("test: Signal() -> [%v] [action:%v] [pattern:%v] [error:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil, ctrl.Proxy().Pattern(), err)
+
+	err = ctrl.Proxy().Signal(NewValues(PatternKey, "urn:postgresql:host2:path"))
+	ctrl = t.LookupByName(name)
+	fmt.Printf("test: Signal() -> [%v] [action:%v] [pattern:%v] [error:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil, ctrl.Proxy().Pattern(), err)
+
+	//Output:
+	//test: Add() -> [[]] [count:1]
+	//test: IsEnabled() -> [true] [action:true] [pattern:urn:postgresql:host:path]
+	//test: Signal() -> [true] [action:true] [pattern:urn:postgresql:host:path] [error:<nil>]
+	//test: Signal() -> [true] [action:true] [pattern:urn:postgresql:host2:path] [error:test action error]
+	
 }
