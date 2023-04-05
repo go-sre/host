@@ -102,23 +102,6 @@ func ExampleLog_RateLimiter_500() {
 
 }
 
-func ExampleLog_Failover() {
-	start := time.Now()
-
-	err := InitEgressOperators([]accessdata.Operator{{Value: accessdata.StartTimeOperator}, {Name: "duration", Value: accessdata.DurationOperator},
-		{Value: accessdata.TrafficOperator}, {Value: accessdata.RouteNameOperator}, {Value: accessdata.FailoverOperator}, {Name: "static2", Value: "value2"}})
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
-	var start1 time.Time
-	Write[TestOutputHandler, accessdata.JsonFormatter](accessdata.NewEgressEntry(start1, time.Since(start), nil, nil, "", map[string]string{accessdata.ControllerName: "handler-route", accessdata.FailoverName: "true"}))
-
-	//Output:
-	//test: Write() -> [{"start_time":"0001-01-01 00:00:00.000000","duration":0,"traffic":"egress","route_name":"handler-route","failover":true,"static2":"value2"}]
-
-}
-
 func ExampleLog_Retry() {
 	start := time.Now()
 

@@ -31,7 +31,6 @@ const (
 	RetryOperator           = "%RETRY"
 	RetryRateLimitOperator  = "%RETRY_RATE_LIMIT%"
 	RetryRateBurstOperator  = "%RETRY_RATE_BURST%"
-	FailoverOperator        = "%FAILOVER%"
 	ProxyOperator           = "%PROXY%"
 
 	ResponseStatusCodeOperator    = "%STATUS_CODE%"    // HTTP status code
@@ -95,8 +94,7 @@ func IsStringValue(op Operator) bool {
 	switch op.Value {
 	case DurationOperator, TimeoutDurationOperator, RateBurstOperator,
 		RateLimitOperator, RetryOperator, RetryRateLimitOperator, RetryRateBurstOperator,
-		FailoverOperator, ResponseStatusCodeOperator,
-		ResponseBytesSentOperator, ResponseBytesReceivedOperator:
+		ResponseStatusCodeOperator, ResponseBytesSentOperator, ResponseBytesReceivedOperator:
 		return false
 	}
 	return true

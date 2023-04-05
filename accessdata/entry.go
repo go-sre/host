@@ -16,7 +16,6 @@ const (
 
 	PingName           = "ping"
 	TimeoutName        = "timeout"
-	FailoverName       = "failover"
 	ProxyName          = "proxy"
 	RetryName          = "retry"
 	RetryRateLimitName = "retryRateLimit"
@@ -201,8 +200,6 @@ func (l *Entry) Value(value string) string {
 		return l.CtrlState[RateLimitName]
 	case RateBurstOperator:
 		return l.CtrlState[RateBurstName]
-	case FailoverOperator:
-		return l.CtrlState[FailoverName]
 	case ProxyOperator:
 		return l.CtrlState[ProxyName]
 	case RetryOperator:

@@ -26,7 +26,6 @@ const (
 	BehaviorRetry     = "retry"
 	BehaviorRateLimit = "rate-limit"
 	BehaviorProxy     = "proxy"
-	BehaviorFailover  = "failover"
 )
 
 type Actuator interface {

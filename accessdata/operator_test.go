@@ -124,9 +124,6 @@ func Example_IsStringValue() {
 	op = Operator{Name: "test", Value: RetryRateBurstOperator}
 	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
 
-	op = Operator{Name: "test", Value: FailoverOperator}
-	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
-
 	//Output:
 	//test: IsStringValue() -> true [value:   %]
 	//test: IsStringValue() -> true [value:%]
@@ -137,5 +134,5 @@ func Example_IsStringValue() {
 	//test: IsStringValue() -> false [value:%RETRY]
 	//test: IsStringValue() -> false [value:%RETRY_RATE_LIMIT%]
 	//test: IsStringValue() -> false [value:%RETRY_RATE_BURST%]
-	//test: IsStringValue() -> false [value:%FAILOVER%]
+
 }

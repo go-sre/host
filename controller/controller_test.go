@@ -18,7 +18,7 @@ func ExampleController_newController() {
 	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
 
 	ctrl, _ := newController(route, t)
-	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled(), ctrl.Failover().IsEnabled())
+	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled())
 
 	d := ctrl.timeout.Duration()
 	a1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(true, http.StatusGatewayTimeout, time.Millisecond*500)))
@@ -27,7 +27,7 @@ func ExampleController_newController() {
 	fmt.Printf("test: cloneController() -> [prev-duration:%v] [curr-duration:%v]\n", d, d1)
 
 	//Output:
-	//test: newController() -> [timeout:true] [rateLimit:true] [retry:false] [failover:false]
+	//test: newController() -> [timeout:true] [rateLimit:true] [retry:false]
 	//test: cloneController() -> [prev-duration:1.5s] [curr-duration:500ms]
 
 }
@@ -37,7 +37,7 @@ func ExampleController_newController_config() {
 	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), nil, NewRateLimiterConfig(true, 503, 100, 10), nil)
 
 	ctrl, _ := newController(route, t)
-	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v] [failover:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled(), ctrl.Failover().IsEnabled())
+	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled())
 
 	//d := ctrl.timeout.Duration()
 	//ctrl1 := cloneController[*timeout](ctrl, newTimeout("new-timeout", t, NewTimeoutConfig(time.Millisecond*500, http.StatusGatewayTimeout)))
@@ -48,7 +48,7 @@ func ExampleController_newController_config() {
 	//ctrl.Actuate(nil)
 
 	//Output:
-	//test: newController() -> [timeout:true] [rateLimit:true] [retry:false] [failover:false]
+	//test: newController() -> [timeout:true] [rateLimit:true] [retry:false]
 
 }
 
@@ -67,7 +67,7 @@ func ExampleController_newController_Error() {
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 10), NewFailoverConfig(false, nil))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 10))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
@@ -101,5 +101,5 @@ func ExampleController_Signal() {
 	//test: newController() -> [errs:[]]
 	//test: Signal(timeout) -> [err:<nil>]
 	//test: Signal(timeout) -> [err:invalid argument: behavior [invalid-behavior] is not supported]
-	
+
 }

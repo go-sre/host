@@ -29,7 +29,6 @@ func FmtLog(traffic string, start time.Time, duration time.Duration, req *http.R
 		"retry:%v, "+
 		"retry-rate-limit:%v, "+
 		"retry-rate-burst:%v, "+
-		"failover:%v, "+
 		"status-flags:%v",
 		FmtTimestamp(start),             //l.Value(StartTimeOperator),
 		strconv.Itoa(d),                 //l.Value(DurationOperator),
@@ -53,8 +52,6 @@ func FmtLog(traffic string, start time.Time, duration time.Duration, req *http.R
 		controllerState[RetryName],          //l.Value(RetryOperator),
 		controllerState[RetryRateLimitName], //l.Value(RetryRateLimitOperator),
 		controllerState[RetryRateBurstName], //l.Value(RetryRateBurstOperator),
-
-		controllerState[FailoverName], //l.Value(RetryRateBurstOperator),
 
 		statusFlags, //l.Value(StatusFlagsOperator),
 	)

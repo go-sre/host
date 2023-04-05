@@ -114,12 +114,20 @@ func InitIngressControllers(read func() ([]byte, error), update func(routes []Ro
 	return nil
 }
 
+func IngressSetAction(name string, action Actuator) {
+	IngressTable().SetAction(name, action)
+}
+
 func IngressSetHttpMatcher(fn HttpMatcher) {
 	IngressTable().SetHttpMatcher(fn)
 }
 
 func IngressSetUriMatcher(fn UriMatcher) {
 	IngressTable().SetUriMatcher(fn)
+}
+
+func EgressSetAction(name string, action Actuator) {
+	EgressTable().SetAction(name, action)
 }
 
 func EgressSetHttpMatcher(fn HttpMatcher) {

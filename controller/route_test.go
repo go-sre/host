@@ -9,41 +9,35 @@ import (
 func ExampleNewRoute() {
 	name := "nil-config"
 	route := newRoute(name)
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
+	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
+		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout"
 	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2))
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
+	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
+		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter"
 	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25))
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
+	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
+		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter-retry"
 	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}))
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
-
-	name = "timeout-rateLimiter-retry-failover"
-	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}), NewFailoverConfig(false, nil))
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
+	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
+		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter-nil"
 	route = newRoute(name, nil, NewTimeoutConfig(true, 504, time.Second*2), nil, NewRateLimiterConfig(true, 503, 100, 25), nil)
-	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v] [failover:%v]\n", name,
-		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil, route.Failover != nil)
+	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
+		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	//Output:
-	//test: newRoute() -> [name:nil-config] [timeout:false] [rateLimiter:false] [retry:false] [failover:false]
-	//test: newRoute() -> [name:timeout] [timeout:true] [rateLimiter:false] [retry:false] [failover:false]
-	//test: newRoute() -> [name:timeout-rateLimiter] [timeout:true] [rateLimiter:true] [retry:false] [failover:false]
-	//test: newRoute() -> [name:timeout-rateLimiter-retry] [timeout:true] [rateLimiter:true] [retry:true] [failover:false]
-	//test: newRoute() -> [name:timeout-rateLimiter-retry-failover] [timeout:true] [rateLimiter:true] [retry:true] [failover:true]
-	//test: newRoute() -> [name:timeout-rateLimiter-nil] [timeout:true] [rateLimiter:true] [retry:false] [failover:false]
+	//test: newRoute() -> [name:nil-config] [timeout:false] [rateLimiter:false] [retry:false]
+	//test: newRoute() -> [name:timeout] [timeout:true] [rateLimiter:false] [retry:false]
+	//test: newRoute() -> [name:timeout-rateLimiter] [timeout:true] [rateLimiter:true] [retry:false]
+	//test: newRoute() -> [name:timeout-rateLimiter-retry] [timeout:true] [rateLimiter:true] [retry:true]
+	//test: newRoute() -> [name:timeout-rateLimiter-nil] [timeout:true] [rateLimiter:true] [retry:false]
 
 }
 
@@ -64,10 +58,6 @@ func ExampleConfig_Marshal() {
 			Wait:        500,
 			StatusCodes: []int{503, 504},
 		},
-		//Failover: &FailoverConfig{
-		//	Enabled: false,
-		//	invoke:  nil,
-		//},
 		Proxy: &ProxyConfig{
 			Enabled: false,
 			Pattern: "http:",
@@ -76,12 +66,8 @@ func ExampleConfig_Marshal() {
 	buf, err := json.Marshal(config)
 	fmt.Printf("test: Config{} -> [error:%v] %v\n", err, string(buf))
 
-	//list := []Route{config, config} //{Package: "package-one", Config: config}, {Package: "package-two", Config: config}}
-	//buf, err = json.Marshal(list)
-	//fmt.Printf("test: []Route -> [error:%v] %v\n", err, string(buf))
-
 	//Output:
-	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Enabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Disabled":false,"StatusCode":503,"Limit":100,"Burst":25},"Retry":{"Enabled":false,"Limit":100,"Burst":33,"Wait":500,"Codes":[503,504]},"Failover":null,"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null}}
+	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Enabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Enabled":false,"StatusCode":503,"Limit":100,"Burst":25},"Retry":{"Enabled":false,"Limit":100,"Burst":33,"Wait":500,"StatusCodes":[503,504]},"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null,"Action":null}}
 
 }
 
@@ -101,7 +87,6 @@ func ExampleNewRouteFromConfig() {
 			Wait:  "5x",
 			Codes: nil,
 		},
-		Failover: nil,
 	}
 	route, err := NewRouteFromConfig(config)
 	fmt.Printf("test: NewRouteFromConfig() [err:%v] [route:%v]\n", err, route)
@@ -115,9 +100,9 @@ func ExampleNewRouteFromConfig() {
 	fmt.Printf("test: NewRouteFromConfig() [err:%v] [route:%v]\n", err, route)
 
 	//Output:
-	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "5x": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
+	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "5x": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil>}]
 	//test: NewRouteFromConfig() [err:<nil>] [timeout:&{true 5040 500ms}] [retry:&{false 100 25 4m5s []}]
-	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "x34": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil> <nil>}]
+	//test: NewRouteFromConfig() [err:strconv.Atoi: parsing "x34": invalid syntax] [route:{   false  <nil> <nil> <nil> <nil>}]
 
 }
 

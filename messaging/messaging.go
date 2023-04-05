@@ -9,14 +9,13 @@ const (
 	ShutdownEvent = "event:shutdown"
 	PingEvent     = "event:ping"
 	StatusEvent   = "event:status"
-	FailoverEvent = "event:failover"
 	HostName      = "host"
 )
 
 // MessageHandler - function type to process a Message
 type MessageHandler func(msg Message)
 
-// Message - message accessdata
+// Message - message access data
 type Message struct {
 	To      string
 	From    string

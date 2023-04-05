@@ -9,6 +9,7 @@ import (
 
 // Configuration - configuration for actuators
 type Configuration interface {
+	SetAction(name string, action Actuator) error
 	SetHttpMatcher(fn HttpMatcher)
 	SetUriMatcher(fn UriMatcher)
 	SetDefaultController(route Route) []error
@@ -119,8 +120,8 @@ func (t *table) SetHostController(route Route) []error {
 	if t.isEgress() {
 		return []error{errors.New("host controller configuration is not valid for egress traffic")}
 	}
-	if !t.isEgress() && (route.Retry != nil || route.Timeout != nil || route.Failover != nil) {
-		return []error{errors.New("host controller configuration does not allow retry, rate limiter, or failover controllers")}
+	if !t.isEgress() && (route.Retry != nil || route.Timeout != nil || route.Proxy != nil) {
+		return []error{errors.New("host controller configuration does not allow retry, rate limiter, or proxy controllers")}
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()

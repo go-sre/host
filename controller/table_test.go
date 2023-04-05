@@ -75,7 +75,7 @@ func ExampleTable_SetHostController_Ingress() {
 
 	//Output:
 	//test: Host() -> [name:host]
-	//test: SetHostController(newRoute) -> [host controller configuration does not allow retry, rate limiter, or failover controllers]
+	//test: SetHostController(newRoute) -> [host controller configuration does not allow retry, rate limiter, or proxy controllers]
 	//test: SetHostController(newRoute) -> []
 
 }

@@ -37,7 +37,6 @@ type Controller interface {
 	Timeout() Timeout
 	RateLimiter() RateLimiter
 	Retry() Retry
-	Failover() Failover
 	Proxy() Proxy
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
@@ -52,12 +51,11 @@ type controller struct {
 	tbl         *table
 	timeout     *timeout
 	rateLimiter *rateLimiter
-	failover    *failover
 	retry       *retry
 	proxy       *proxy
 }
 
-func cloneController[T *timeout | *rateLimiter | *retry | *proxy | *failover](curr *controller, item T) *controller {
+func cloneController[T *timeout | *rateLimiter | *retry | *proxy](curr *controller, item T) *controller {
 	newC := new(controller)
 	*newC = *curr
 	switch i := any(item).(type) {
@@ -65,8 +63,6 @@ func cloneController[T *timeout | *rateLimiter | *retry | *proxy | *failover](cu
 		newC.timeout = i
 	case *rateLimiter:
 		newC.rateLimiter = i
-	case *failover:
-		newC.failover = i
 	case *proxy:
 		newC.proxy = i
 	case *retry:
@@ -103,13 +99,6 @@ func newController(route Route, t *table) (*controller, []error) {
 			errs = append(errs, err)
 		}
 	}
-	if route.Failover != nil {
-		ctrl.failover = newFailover(route.Name, t, route.Failover)
-		err = ctrl.failover.validate()
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
 	if route.Proxy != nil {
 		ctrl.proxy = newProxy(route.Name, t, route.Proxy)
 		err = ctrl.proxy.validate()
@@ -127,15 +116,11 @@ func newDefaultController(name string) *controller {
 	ctrl.proxy = disabledProxy
 	ctrl.rateLimiter = disabledRateLimiter
 	ctrl.retry = disabledRetry
-	ctrl.failover = disabledFailover
 	return ctrl
 }
 
 func (c *controller) validate(egress bool) error {
 	if !egress {
-		if c.failover != nil {
-			return errors.New("invalid configuration: Failover is not valid for ingress traffic")
-		}
 		if c.retry != nil {
 			return errors.New("invalid configuration: Retry is not valid for ingress traffic")
 		}
@@ -168,10 +153,6 @@ func (c *controller) Retry() Retry {
 	return c.retry
 }
 
-func (c *controller) Failover() Failover {
-	return c.failover
-}
-
 func (c *controller) Proxy() Proxy {
 	return c.proxy
 }
@@ -192,9 +173,6 @@ func (c *controller) Signal(values url.Values) error {
 		break
 	case BehaviorProxy:
 		return c.Proxy().Signal(values)
-		break
-	case BehaviorFailover:
-		return c.Failover().Signal(values)
 		break
 	}
 	return errors.New(fmt.Sprintf("invalid argument: behavior [%s] is not supported", values.Get(BehaviorKey)))
@@ -240,7 +218,6 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 		return
 	}
 	state := c.state()
-	failoverState(state, c.failover)
 	retryState(state, c.retry, retry)
 	proxyState(state, c.proxy)
 
@@ -249,7 +226,6 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
 	state := c.state()
-	failoverState(state, c.failover)
 	//retryState(state, c.retry, false)
 	//proxyState(state, c.proxy)
 

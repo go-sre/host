@@ -25,7 +25,6 @@ var operators = map[string]*Operator{
 	RetryOperator:           {"retry", RetryOperator},
 	RetryRateLimitOperator:  {"retry_rate_limit", RetryRateLimitOperator},
 	RetryRateBurstOperator:  {"retry_rate_burst", RetryRateBurstOperator},
-	FailoverOperator:        {"failover", FailoverOperator},
 	ProxyOperator:           {"proxy", ProxyOperator},
 
 	// Response
