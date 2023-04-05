@@ -15,6 +15,8 @@ type Header struct {
 type Proxy interface {
 	State
 	Actuator
+	Action() Actuator
+	SetAction(action Actuator) error
 	Pattern() string
 	Headers() []Header
 	BuildUrl(uri *url.URL) *url.URL
@@ -24,24 +26,24 @@ type ProxyConfig struct {
 	Enabled bool
 	Pattern string
 	Headers []Header
+	Action  Actuator
 }
 
-var disabledProxy = newProxy("[disabled]", nil, NewProxyConfig(false, "", nil))
+var disabledProxy = newProxy("[disabled]", nil, NewProxyConfig(false, "", nil, nil))
 
-func NewProxyConfig(enabled bool, pattern string, headers []Header) *ProxyConfig {
+func NewProxyConfig(enabled bool, pattern string, headers []Header, action Actuator) *ProxyConfig {
 	p := new(ProxyConfig)
 	p.Enabled = enabled
 	p.Pattern = pattern
 	p.Headers = headers
+	p.Action = action
 	return p
 }
 
 type proxy struct {
-	table   *table
-	name    string
-	enabled bool
-	pattern string
-	headers []Header
+	table  *table
+	name   string
+	config ProxyConfig
 }
 
 func cloneProxy(curr *proxy) *proxy {
@@ -55,16 +57,14 @@ func newProxy(name string, table *table, config *ProxyConfig) *proxy {
 	t.table = table
 	t.name = name
 	if config != nil {
-		t.enabled = config.Enabled
-		t.pattern = config.Pattern
-		t.headers = config.Headers
+		t.config = *config
 	}
 	return t
 }
 
 func (p *proxy) validate() error {
-	if p.enabled {
-		return validatePattern(p.pattern)
+	if p.config.Enabled {
+		return validatePattern(p.config.Pattern)
 	}
 	return nil
 }
@@ -84,14 +84,14 @@ func (p *proxy) Signal(values url.Values) error {
 	UpdateEnable(p, values)
 	if values.Has(PatternKey) {
 		v := values.Get(PatternKey)
-		if v != p.pattern {
+		if v != p.config.Pattern {
 			return p.setPattern(v)
 		}
 	}
 	return nil
 }
 
-func (p *proxy) IsEnabled() bool { return p.enabled }
+func (p *proxy) IsEnabled() bool { return p.config.Enabled }
 
 func (p *proxy) Enable() {
 	if p.IsEnabled() {
@@ -107,19 +107,31 @@ func (p *proxy) Disable() {
 	p.enableProxy(false)
 }
 
+func (p *proxy) Action() Actuator {
+	return p.config.Action
+}
+
+func (p *proxy) SetAction(action Actuator) error {
+	if action == nil {
+		return errors.New("invalid configuration: Proxy action is nil")
+	}
+	p.setAction(action)
+	return nil
+}
+
 func (p *proxy) Pattern() string {
-	return p.pattern
+	return p.config.Pattern
 }
 
 func (p *proxy) Headers() []Header {
-	return p.headers
+	return p.config.Headers
 }
 
 func (p *proxy) BuildUrl(uri *url.URL) *url.URL {
-	if uri == nil || len(p.pattern) == 0 {
+	if uri == nil || len(p.config.Pattern) == 0 {
 		return uri
 	}
-	uri2, err := url.Parse(p.pattern)
+	uri2, err := url.Parse(p.config.Pattern)
 	if err != nil {
 		return uri
 	}
@@ -156,7 +168,7 @@ func (p *proxy) enableProxy(enabled bool) {
 	defer p.table.mu.Unlock()
 	if ctrl, ok := p.table.controllers[p.name]; ok {
 		c := cloneProxy(ctrl.proxy)
-		c.enabled = enabled
+		c.config.Enabled = enabled
 		p.table.update(p.name, cloneController[*proxy](ctrl, c))
 	}
 }
@@ -173,10 +185,23 @@ func (p *proxy) setPattern(pattern string) error {
 	defer p.table.mu.Unlock()
 	if ctrl, ok := p.table.controllers[p.name]; ok {
 		fc := cloneProxy(ctrl.proxy)
-		fc.pattern = pattern
+		fc.config.Pattern = pattern
 		p.table.update(p.name, cloneController[*proxy](ctrl, fc))
 	}
 	return nil
+}
+
+func (p *proxy) setAction(action Actuator) {
+	if p.table == nil {
+		return
+	}
+	p.table.mu.Lock()
+	defer p.table.mu.Unlock()
+	if ctrl, ok := p.table.controllers[p.name]; ok {
+		fc := cloneProxy(ctrl.proxy)
+		fc.config.Action = action
+		p.table.update(p.name, cloneController[*proxy](ctrl, fc))
+	}
 }
 
 func validatePattern(pattern string) error {

@@ -1,17 +1,30 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 )
 
+type testAction struct{}
+
+func (testAction) Signal(values url.Values) error {
+	return errors.New("test action error")
+}
+
+type testAction2 struct{}
+
+func (testAction2) Signal(values url.Values) error {
+	return errors.New("test action 2 error")
+}
+
 func Example_newProxy() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", []Header{{"name", "value"}, {"name2", "value2"}}))
-	fmt.Printf("test: newProxy() -> [name:%v] [current:%v] [headers:%v]\n", p.name, p.pattern, p.headers)
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", []Header{{"name", "value"}, {"name2", "value2"}}, nil))
+	fmt.Printf("test: newProxy() -> [name:%v] [current:%v] [headers:%v]\n", p.name, p.config.Pattern, p.config.Headers)
 
-	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil))
-	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.pattern)
+	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil, nil))
+	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.config.Pattern)
 
 	err := disabledProxy.validate()
 	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", disabledProxy.name, err)
@@ -19,8 +32,8 @@ func Example_newProxy() {
 	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", p.name, err)
 
 	p2 := cloneProxy(p)
-	p2.pattern = "urn:test"
-	fmt.Printf("test: cloneProxy() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", p.pattern, p.name, p2.pattern, p2.name)
+	p2.config.Pattern = "urn:test"
+	fmt.Printf("test: cloneProxy() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", p.config.Pattern, p.name, p2.config.Pattern, p2.name)
 
 	//Output:
 	//test: newProxy() -> [name:test-route] [current:http://localhost:8080] [headers:[{name value} {name2 value2}]]
@@ -33,13 +46,13 @@ func Example_newProxy() {
 
 func ExampleProxy_State() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil))
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil, nil))
 
 	m := make(map[string]string, 16)
 	proxyState(m, p)
 	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
 	m = make(map[string]string, 16)
-	p.enabled = true
+	p.config.Enabled = true
 	proxyState(m, p)
 	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
 
@@ -52,24 +65,24 @@ func ExampleProxy_State() {
 func ExampleProxy_BuildUrl() {
 	t := newTable(true, false)
 	uri, _ := url.Parse("https://localhost:8080/basePath/resource?first=false")
-	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:", nil))
+	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:", nil, nil))
 
 	fmt.Printf("test: InputUrl() -> %v\n", uri.String())
 
 	uri2 := c.BuildUrl(uri)
-	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
+	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com", nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com", nil, nil))
 	uri2 = c.BuildUrl(uri)
-	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
+	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search", nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search", nil, nil))
 	uri2 = c.BuildUrl(uri)
-	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
+	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test", nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test", nil, nil))
 	uri2 = c.BuildUrl(uri)
-	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.pattern, uri2.String())
+	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
 	//Output:
 	//test: InputUrl() -> https://localhost:8080/basePath/resource?first=false
@@ -81,7 +94,7 @@ func ExampleProxy_BuildUrl() {
 
 func ExampleProxy_SetPattern() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080", nil)
+	config := NewProxyConfig(false, "http://localhost:8080", nil, nil)
 	t := newTable(true, false)
 
 	errs := t.AddController(newRoute(name, config))
@@ -119,7 +132,7 @@ func ExampleProxy_SetPattern() {
 
 func ExampleProxy_Toggle() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080", nil)
+	config := NewProxyConfig(false, "http://localhost:8080", nil, nil)
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
@@ -131,11 +144,37 @@ func ExampleProxy_Toggle() {
 
 	ctrl.Proxy().Signal(enableValues(true))
 	ctrl1 := t.LookupByName(name)
-	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.t().proxy.IsEnabled())
+	fmt.Printf("test: Enable() -> [prev-enabled:%v] [curr-enabled:%v]\n", prevEnabled, ctrl1.Proxy().IsEnabled())
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
 	//test: IsEnabled() -> [false]
 	//test: Enable() -> [prev-enabled:false] [curr-enabled:true]
 
+}
+
+func ExampleProxy_Action() {
+	var action testAction
+	var action2 testAction2
+	name := "test-route"
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action)
+	t := newTable(true, false)
+
+	ok := t.AddController(newRoute(name, config))
+	fmt.Printf("test: Add() -> [%v] [count:%v]\n", ok, t.count())
+
+	ctrl := t.LookupByName(name)
+	fmt.Printf("test: IsEnabled() -> [%v] [action:%v]\n", ctrl.Proxy().IsEnabled(), ctrl.Proxy().Action() != nil)
+	fmt.Printf("test: Action().Signal(nil) -> [%v]\n", ctrl.Proxy().Action().Signal(nil))
+
+	ctrl.Proxy().SetAction(action2)
+	ctrl = t.LookupByName(name)
+	fmt.Printf("test: Action2().Signal(nil) -> [%v]\n", ctrl.Proxy().Action().Signal(nil))
+
+	//Output:
+	//test: Add() -> [[]] [count:1]
+	//test: IsEnabled() -> [true] [action:true]
+	//test: Action().Signal(nil) -> [test action error]
+	//test: Action2().Signal(nil) -> [test action 2 error]
+	
 }
