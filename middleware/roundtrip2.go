@@ -55,7 +55,7 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 }
 
 func (w *controllerWrapper) exchange(tc controller.Timeout, req *http.Request) (resp *http.Response, err error, statusFlags string) {
-	if tc == nil || !tc.IsEnabled() {
+	if tc == nil || !tc.IsEnabled() || tc.Duration() == 0 {
 		resp, err = w.rt.RoundTrip(req)
 		return
 	}

@@ -77,6 +77,9 @@ func (r *retry) validate() error {
 	if r.config.Burst < 0 {
 		return errors.New(fmt.Sprintf("invalid configuration: retry burst is < 0 [%v]", r.name))
 	}
+	if r.config.Wait < 0 {
+		return errors.New(fmt.Sprintf("invalid configuration: wait duration is < 0 [%v]", r.name))
+	}
 	return nil
 }
 

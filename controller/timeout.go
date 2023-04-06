@@ -55,8 +55,8 @@ func newTimeout(name string, table *table, config *TimeoutConfig) *timeout {
 }
 
 func (t *timeout) validate() error {
-	if t.config.Duration <= 0 {
-		return errors.New(fmt.Sprintf("invalid configuration: Timeout duration is <= 0 [%v]", t.name))
+	if t.config.Duration < 0 {
+		return errors.New(fmt.Sprintf("invalid configuration: Timeout duration is < 0 [%v]", t.name))
 	}
 	return nil
 }
