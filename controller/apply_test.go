@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 )
 
@@ -31,20 +29,7 @@ func (t *testStatus) Code() uint32 {
 
 func init() {
 	defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, ctrlState map[string]string) {
-		var host string
-		var path string
-		u, _ := url.Parse(req.URL.String())
-		if u.Scheme == "urn" && u.Host == "" {
-			//l.Protocol = u.Scheme
-			t := strings.Split(u.Opaque, ":")
-			if len(t) == 1 {
-				host = t[0]
-			} else {
-				host = t[0]
-				path = t[1]
-			}
-		}
-
+		_, host, path := ParseUri(req.URL.String())
 		s := fmt.Sprintf("traffic:%v ,"+
 			"route:%v ,"+
 			"request-id:%v, "+
