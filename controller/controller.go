@@ -15,6 +15,7 @@ const (
 	HostControllerName    = "host"
 	DefaultControllerName = "*"
 	NilControllerName     = "!"
+	NilBehaviorName       = "!"
 	FromRouteHeaderName   = "from-route"
 
 	RateLimitFlag       = "RL"
@@ -112,10 +113,10 @@ func newController(route Route, t *table) (*controller, []error) {
 func newDefaultController(name string) *controller {
 	ctrl := new(controller)
 	ctrl.name = name
-	ctrl.timeout = disabledTimeout
-	ctrl.proxy = disabledProxy
-	ctrl.rateLimiter = disabledRateLimiter
-	ctrl.retry = disabledRetry
+	ctrl.timeout = nilTimeout
+	ctrl.proxy = nilProxy
+	ctrl.rateLimiter = nilRateLimiter
+	ctrl.retry = nilRetry
 	return ctrl
 }
 

@@ -29,7 +29,7 @@ type RateLimiterConfig struct {
 	Burst      int
 }
 
-var disabledRateLimiter = newRateLimiter("[disabled]", nil, NewRateLimiterConfig(false, 0, 1, 1))
+var nilRateLimiter = newRateLimiter(NilBehaviorName, nil, NewRateLimiterConfig(false, 0, 1, 1))
 
 func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst int) *RateLimiterConfig {
 	c := new(RateLimiterConfig)
@@ -114,8 +114,11 @@ func (r *rateLimiter) Disable() {
 }
 
 func (r *rateLimiter) Signal(values url.Values) error {
+	if r.name == NilBehaviorName {
+		return errors.New("invalid signal: rate limiter is not configured")
+	}
 	if values == nil {
-		return nil
+		return errors.New("invalid argument: values are nil for rate limiter signal")
 	}
 	UpdateEnable(r, values)
 	limit, burst, err := ParseLimitAndBurst(values)

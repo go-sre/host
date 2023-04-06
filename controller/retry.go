@@ -29,7 +29,7 @@ type RetryConfig struct {
 	StatusCodes []int
 }
 
-var disabledRetry = newRetry("[disabled]", nil, NewRetryConfig(false, 0, 0, 0, nil))
+var nilRetry = newRetry(NilBehaviorName, nil, NewRetryConfig(false, 0, 0, 0, nil))
 
 func NewRetryConfig(enabled bool, limit rate.Limit, burst int, wait time.Duration, validCodes []int) *RetryConfig {
 	c := new(RetryConfig)
@@ -122,14 +122,14 @@ func (r *retry) Disable() {
 }
 
 func (r *retry) Signal(values url.Values) error {
+	if r.name == NilBehaviorName {
+		return errors.New("invalid signal: retry is not configured")
+	}
 	if values == nil {
-		return nil
+		return errors.New("invalid argument: values are nil for retry signal")
 	}
 	UpdateEnable(r, values)
 	limit, burst, err := ParseLimitAndBurst(values)
-	if err != nil {
-		return nil
-	}
 	if err != nil {
 		return err
 	}

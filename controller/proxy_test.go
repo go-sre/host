@@ -26,8 +26,8 @@ func Example_newProxy() {
 	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil, nil))
 	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.config.Pattern)
 
-	err := disabledProxy.validate()
-	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", disabledProxy.name, err)
+	err := nilProxy.validate()
+	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", nilProxy.name, err)
 	err = p.validate()
 	fmt.Printf("test: validate() -> [name:%v] [error:%v]\n", p.name, err)
 
@@ -38,7 +38,7 @@ func Example_newProxy() {
 	//Output:
 	//test: newProxy() -> [name:test-route] [current:http://localhost:8080] [headers:[{name value} {name2 value2}]]
 	//test: newProxy() -> [name:test-route2] [current:https://google.com]
-	//test: validate() -> [name:[disabled]] [error:<nil>]
+	//test: validate() -> [name:!] [error:<nil>]
 	//test: validate() -> [name:test-route2] [error:<nil>]
 	//test: cloneProxy() -> [prev-config:https://google.com] [prev-name:test-route2] [curr-config:urn:test] [curr-name:test-route2]
 
@@ -224,5 +224,5 @@ func ExampleProxy_SignalAction() {
 	//test: IsEnabled() -> [true] [action:true] [pattern:urn:postgresql:host:path]
 	//test: Signal() -> [true] [action:true] [pattern:urn:postgresql:host:path] [error:<nil>]
 	//test: Signal() -> [true] [action:true] [pattern:urn:postgresql:host2:path] [error:test action error]
-	
+
 }

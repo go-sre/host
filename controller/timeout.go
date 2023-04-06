@@ -23,7 +23,7 @@ type TimeoutConfig struct {
 	Duration   time.Duration
 }
 
-var disabledTimeout = newTimeout("[disabled]", nil, NewTimeoutConfig(false, 0, 1))
+var nilTimeout = newTimeout(NilBehaviorName, nil, NewTimeoutConfig(false, 0, 1))
 
 func NewTimeoutConfig(enabled bool, statusCode int, duration time.Duration) *TimeoutConfig {
 	if statusCode <= 0 {
@@ -71,8 +71,11 @@ func timeoutState(m map[string]string, t *timeout) {
 }
 
 func (t *timeout) Signal(values url.Values) error {
+	if t.name == NilBehaviorName {
+		return errors.New("invalid signal: timeout is not configured")
+	}
 	if values == nil {
-		return nil
+		return errors.New("invalid argument: values are nil for timeout signal")
 	}
 	UpdateEnable(t, values)
 	if values.Has(DurationKey) {
@@ -81,7 +84,7 @@ func (t *timeout) Signal(values url.Values) error {
 			return err
 		}
 		if duration <= 0 {
-			return errors.New("invalid configuration: Timeout duration is <= 0")
+			return errors.New("invalid configuration: timeout duration is <= 0")
 		}
 		if duration != t.Duration() {
 			t.setTimeout(duration)

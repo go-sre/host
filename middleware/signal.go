@@ -20,13 +20,15 @@ func SignalHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if ctrl == nil {
 		w.WriteHeader(http.StatusBadRequest)
-		err := errors.New(fmt.Sprintf("invalid arguement: route [%s] not found in [%s] table", r.URL.Query().Get(controller.RouteKey), r.URL.Query().Get(controller.TrafficKey)))
+		err := errors.New(fmt.Sprintf("invalid argument: route [%s] not found in [%s] table", r.URL.Query().Get(controller.RouteKey), r.URL.Query().Get(controller.TrafficKey)))
 		w.Write([]byte(err.Error()))
+		return
 	}
 	err := ctrl.Signal(r.URL.Query())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }

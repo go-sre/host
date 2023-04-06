@@ -30,7 +30,7 @@ type ProxyConfig struct {
 	Action  Actuator
 }
 
-var disabledProxy = newProxy("[disabled]", nil, NewProxyConfig(false, "", nil, nil))
+var nilProxy = newProxy(NilBehaviorName, nil, NewProxyConfig(false, "", nil, nil))
 
 func NewProxyConfig(enabled bool, pattern string, headers []Header, action Actuator) *ProxyConfig {
 	p := new(ProxyConfig)
@@ -79,8 +79,11 @@ func proxyState(m map[string]string, p *proxy) {
 }
 
 func (p *proxy) Signal(values url.Values) error {
+	if p.name == NilBehaviorName {
+		return errors.New("invalid signal: proxy is not configured")
+	}
 	if values == nil {
-		return nil
+		return errors.New("invalid argument: values are nil for proxy signal")
 	}
 	if IsDisable(values) {
 		p.Disable()
