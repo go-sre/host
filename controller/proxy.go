@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -64,7 +65,7 @@ func newProxy(name string, table *table, config *ProxyConfig) *proxy {
 
 func (p *proxy) validate() error {
 	if p.config.Enabled {
-		return validatePattern(p.config.Pattern)
+		return p.validatePattern(p.config.Pattern)
 	}
 	return nil
 }
@@ -191,7 +192,7 @@ func (p *proxy) setPattern(pattern string) error {
 	if p.table == nil {
 		return nil
 	}
-	err := validatePattern(pattern)
+	err := p.validatePattern(pattern)
 	if err != nil {
 		return err
 	}
@@ -218,13 +219,13 @@ func (p *proxy) setAction(action Actuator) {
 	}
 }
 
-func validatePattern(pattern string) error {
+func (p *proxy) validatePattern(pattern string) error {
 	if len(pattern) == 0 {
-		return errors.New("invalid argument: proxy pattern is empty")
+		return errors.New(fmt.Sprintf("invalid argument: proxy pattern is empty [%v]", p.name))
 	}
 	_, err := url.Parse(pattern)
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("%v [%v]", err.Error(), p.name))
 	}
 	return nil
 }

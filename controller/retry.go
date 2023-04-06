@@ -69,13 +69,13 @@ func newRetry(name string, table *table, config *RetryConfig) *retry {
 
 func (r *retry) validate() error {
 	if len(r.config.StatusCodes) == 0 {
-		return errors.New("invalid configuration: Retry status codes are empty")
+		return errors.New(fmt.Sprintf("invalid configuration: retry status codes are empty [%v]", r.name))
 	}
 	if r.config.Limit < 0 {
-		return errors.New("invalid configuration: Retry limit is < 0")
+		return errors.New(fmt.Sprintf("invalid configuration: retry limit is < 0 [%v]", r.name))
 	}
 	if r.config.Burst < 0 {
-		return errors.New("invalid configuration: Retry burst is < 0")
+		return errors.New(fmt.Sprintf("invalid configuration: retry burst is < 0 [%v]", r.name))
 	}
 	return nil
 }

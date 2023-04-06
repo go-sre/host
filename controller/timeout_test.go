@@ -37,7 +37,7 @@ func Example_newTimeout() {
 	fmt.Printf("test: cloneTimeout() -> [prev-config:%v] [prev-name:%v] [curr-config:%v] [curr-name:%v]\n", t.config, t.name, t2.config, t2.name)
 
 	//Output:
-	//test: validate() -> [name:error-timeout] [error:invalid configuration: Timeout duration is <= 0]
+	//test: validate() -> [name:error-timeout] [error:invalid configuration: Timeout duration is <= 0 [error-timeout]]
 	//test: validate() -> [name:[disabled]] [error:<nil>]
 	//test: newTimeout() -> [name:test-route] [current:100ns]
 	//test: newTimeout() -> [name:test-route2] [current:2s]
