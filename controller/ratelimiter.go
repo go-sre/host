@@ -69,11 +69,11 @@ func newRateLimiter(name string, table *table, config *RateLimiterConfig) *rateL
 }
 
 func (r *rateLimiter) validate() error {
-	if r.config.Limit <= 0 {
-		return errors.New(fmt.Sprintf("invalid configuration: RateLimiter limit is <= 0"))
+	if r.config.Limit < 0 {
+		return errors.New(fmt.Sprintf("invalid configuration: RateLimiter limit is < 0"))
 	}
-	if r.config.Burst <= 0 {
-		return errors.New(fmt.Sprintf("invalid configuration: RateLimiter burst is <= 0"))
+	if r.config.Burst < 0 {
+		return errors.New(fmt.Sprintf("invalid configuration: RateLimiter burst is < 0"))
 	}
 	return nil
 }

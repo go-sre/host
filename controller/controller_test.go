@@ -80,7 +80,7 @@ func ExampleController_newController_Error() {
 	//test: newController() -> [errs:[invalid configuration: Retry status codes are empty]]
 	//test: newController() -> [errs:[invalid configuration: Timeout duration is <= 0]]
 	//test: newController() -> [errs:[]]
-	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is <= 0]]
+	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is < 0]]
 
 }
 

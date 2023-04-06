@@ -156,6 +156,9 @@ func (r *retry) IsRetryable(statusCode int) (bool, string) {
 	}
 	for _, code := range r.config.StatusCodes {
 		if code == statusCode {
+			if r.config.Wait == 0 {
+				return true, ""
+			}
 			jitter := time.Duration(r.rand.Int31n(1000))
 			time.Sleep(r.config.Wait + jitter)
 			return true, ""

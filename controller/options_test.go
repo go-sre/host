@@ -25,6 +25,8 @@ func _ExampleLog() {
 	state[RetryRateLimitName] = "10"
 	state[RetryRateBurstName] = "1"
 
+	state[ProxyName] = "true"
+
 	defaultLogFn("egress", start, time.Since(start), req, resp, "UT", state)
 
 	//Output:

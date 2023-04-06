@@ -20,25 +20,24 @@ func EgressApply(ctx context.Context, statusCode func() int, uri, requestId, met
 	newCtx := ctx
 	var cancelCtx context.CancelFunc
 
-	act := EgressTable().LookupUri(uri, method)
-	if rlc := act.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
+	ctrl := EgressTable().LookupUri(uri, method)
+	if rlc := ctrl.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
 		limited = true
 		statusFlags = RateLimitFlag
 	}
 	if !limited {
-		if toc := act.Timeout(); toc.IsEnabled() {
-			newCtx, cancelCtx = context.WithTimeout(ctx, toc.Duration())
+		if to := ctrl.Timeout(); to.IsEnabled() {
+			newCtx, cancelCtx = context.WithTimeout(ctx, to.Duration())
 		}
 	}
 	return func() {
 		if cancelCtx != nil {
 			cancelCtx()
 		}
-		//code := (*status).Code()
 		code := statusCode()
 		if code == StatusDeadlineExceeded {
 			statusFlags = UpstreamTimeoutFlag
 		}
-		act.LogEgress(start, time.Since(start), code, uri, requestId, method, statusFlags)
+		ctrl.LogEgress(start, time.Since(start), code, uri, requestId, method, statusFlags)
 	}, newCtx, limited
 }

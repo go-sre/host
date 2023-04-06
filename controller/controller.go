@@ -226,8 +226,8 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
 	state := c.state()
-	//retryState(state, c.retry, false)
-	//proxyState(state, c.proxy)
+	retryState(state, c.retry, false)
+	proxyState(state, c.proxy)
 
 	req, _ := http.NewRequest(method, uri, nil)
 	req.Header.Add(RequestIdHeaderName, requestId)

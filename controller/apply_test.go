@@ -2,6 +2,10 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -26,39 +30,52 @@ func (t *testStatus) Code() uint32 {
 }
 
 func init() {
-	/*
-		defaultLogFn = func(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string, actuatorState map[string]string) {
-			s := fmt.Sprintf("traffic:%v ,"+
-				"route:%v ,"+
-				"request-id:%v, "+
-				"status-code:%v, "+
-				"method:%v, "+
-				"url:%v, "+
-				"host:%v, "+
-				"path:%v, "+
-				"timeout:%v, "+
-				"rate-limit:%v, "+
-				"rate-burst:%v, "+
-				"retry:%v, "+
-				"retry-rate-limit:%v, "+
-				"retry-rate-burst:%v, "+
-				"status-flags:%v",
-				"egress", actuatorState[ActName], requestId, statusCode, method, uri, "postgres", "query.access-log",
-				actuatorState[TimeoutName],
-				actuatorState[RateLimitName], actuatorState[RateBurstName],
-				actuatorState[RetryName], actuatorState[RetryRateLimitName], actuatorState[RetryRateBurstName],
-				statusFlags)
-			fmt.Printf("{%v}\n", s)
+	defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, ctrlState map[string]string) {
+		var host string
+		var path string
+		u, _ := url.Parse(req.URL.String())
+		if u.Scheme == "urn" && u.Host == "" {
+			//l.Protocol = u.Scheme
+			t := strings.Split(u.Opaque, ":")
+			if len(t) == 1 {
+				host = t[0]
+			} else {
+				host = t[0]
+				path = t[1]
+			}
 		}
 
-	*/
+		s := fmt.Sprintf("traffic:%v ,"+
+			"route:%v ,"+
+			"request-id:%v, "+
+			"status-code:%v, "+
+			"method:%v, "+
+			"url:%v, "+
+			"host:%v, "+
+			"path:%v, "+
+			"timeout:%v, "+
+			"rate-limit:%v, "+
+			"rate-burst:%v, "+
+			"retry:%v, "+
+			"retry-rate-limit:%v, "+
+			"retry-rate-burst:%v, "+
+			"proxy:%v, "+
+			"status-flags:%v",
+			traffic, ctrlState[ControllerName], req.Header.Get(RequestIdHeaderName), resp.StatusCode, req.Method, req.URL.String(), host, path,
+			ctrlState[TimeoutName],
+			ctrlState[RateLimitName], ctrlState[RateBurstName],
+			ctrlState[RetryName], ctrlState[RetryRateLimitName], ctrlState[RetryRateBurstName],
+			ctrlState[ProxyName],
+			statusFlags)
+		fmt.Printf("{%v}\n", s)
+	}
 }
 
 func ExampleEgressApply() {
 	function(context.Background())
 
 	//Output:
-	//{traffic:egress ,route:* ,request-id:123-456-7890, status-code:0, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:-1, rate-limit:-1, rate-burst:-1, retry:, retry-rate-limit:-1, retry-rate-burst:-1, status-flags:}
+	//{traffic:egress ,route:* ,request-id:123-456-7890, status-code:0, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:-1, rate-limit:-1, rate-burst:-1, retry:false, retry-rate-limit:-1, retry-rate-burst:-1, proxy:false, status-flags:}
 
 }
 
@@ -67,7 +84,8 @@ func ExampleEgressApply_RateLimit() {
 	egressTable = NewEgressTable()
 
 	route := NewRoute(name, EgressTraffic, "", false, NewRateLimiterConfig(true, 503, 1, 0))
-	EgressTable().AddController(route)
+	errs := EgressTable().AddController(route)
+	fmt.Printf("test: EgressTable().AddController(route) [errs:%v]\n", errs)
 	EgressTable().SetUriMatcher(func(uri string, method string) (string, bool) {
 		return name, true
 	})
@@ -75,7 +93,8 @@ func ExampleEgressApply_RateLimit() {
 	functionRateLimited(context.Background())
 
 	//Output:
-	//{traffic:egress ,route:rate-limit-route ,request-id:123-456-7890, status-code:94, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:-1, rate-limit:1, rate-burst:0, retry:, retry-rate-limit:-1, retry-rate-burst:-1, status-flags:RL}
+	//test: EgressTable().AddController(route) [errs:[]]
+	//{traffic:egress ,route:rate-limit-route ,request-id:123-456-7890, status-code:94, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:-1, rate-limit:1, rate-burst:0, retry:false, retry-rate-limit:-1, retry-rate-burst:-1, proxy:false, status-flags:RL}
 
 }
 
@@ -92,7 +111,7 @@ func ExampleEgressApply_Timeout() {
 	functionTimeout(context.Background())
 
 	//Output:
-	//{traffic:egress ,route:timeout-route ,request-id:123-456-7890, status-code:4, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:1000, rate-limit:-1, rate-burst:-1, retry:, retry-rate-limit:-1, retry-rate-burst:-1, status-flags:UT}
+	//{traffic:egress ,route:timeout-route ,request-id:123-456-7890, status-code:4, method:GET, url:urn:postgres:query.access-log, host:postgres, path:query.access-log, timeout:1000, rate-limit:-1, rate-burst:-1, retry:false, retry-rate-limit:-1, retry-rate-burst:-1, proxy:false, status-flags:UT}
 
 }
 
