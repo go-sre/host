@@ -79,7 +79,7 @@ func proxyState(m map[string]string, p *proxy) {
 }
 
 func (p *proxy) Signal(values url.Values) error {
-	if p.name == NilBehaviorName {
+	if p.IsNil() {
 		return errors.New("invalid signal: proxy is not configured")
 	}
 	if values == nil {
@@ -110,6 +110,8 @@ func (p *proxy) Signal(values url.Values) error {
 }
 
 func (p *proxy) IsEnabled() bool { return p.config.Enabled }
+
+func (p *proxy) IsNil() bool { return p.name == NilBehaviorName }
 
 func (p *proxy) Enable() {
 	if p.IsEnabled() {
@@ -179,7 +181,7 @@ func (p *proxy) BuildUrl(uri *url.URL) *url.URL {
 }
 
 func (p *proxy) enableProxy(enabled bool) {
-	if p.table == nil {
+	if p.table == nil || p.IsNil() {
 		return
 	}
 	p.table.mu.Lock()
@@ -192,7 +194,7 @@ func (p *proxy) enableProxy(enabled bool) {
 }
 
 func (p *proxy) setPattern(pattern string) error {
-	if p.table == nil {
+	if p.table == nil || p.IsNil() {
 		return nil
 	}
 	err := p.validatePattern(pattern)

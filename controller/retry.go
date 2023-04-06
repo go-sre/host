@@ -107,6 +107,8 @@ func retryState(m map[string]string, r *retry, retried bool) map[string]string {
 
 func (r *retry) IsEnabled() bool { return r.config.Enabled }
 
+func (r *retry) IsNil() bool { return r.name == NilBehaviorName }
+
 func (r *retry) Enable() {
 	if r.IsEnabled() {
 		return
@@ -122,7 +124,7 @@ func (r *retry) Disable() {
 }
 
 func (r *retry) Signal(values url.Values) error {
-	if r.name == NilBehaviorName {
+	if r.IsNil() {
 		return errors.New("invalid signal: retry is not configured")
 	}
 	if values == nil {
@@ -209,7 +211,7 @@ func (r *retry) SetBurst(burst int) {
 */
 
 func (r *retry) enableRetry(enable bool) {
-	if r.table == nil {
+	if r.table == nil || r.IsNil() {
 		return
 	}
 	r.table.mu.Lock()
@@ -222,7 +224,7 @@ func (r *retry) enableRetry(enable bool) {
 }
 
 func (r *retry) setRetryRateLimiter(limit rate.Limit, burst int) {
-	if r.table == nil {
+	if r.table == nil || r.IsNil() {
 		return
 	}
 	r.table.mu.Lock()

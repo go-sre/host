@@ -99,6 +99,8 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 
 func (r *rateLimiter) IsEnabled() bool { return r.config.Enabled }
 
+func (r *rateLimiter) IsNil() bool { return r.name == NilBehaviorName }
+
 func (r *rateLimiter) Enable() {
 	if r.IsEnabled() {
 		return
@@ -114,7 +116,7 @@ func (r *rateLimiter) Disable() {
 }
 
 func (r *rateLimiter) Signal(values url.Values) error {
-	if r.name == NilBehaviorName {
+	if r.IsNil() {
 		return errors.New("invalid signal: rate limiter is not configured")
 	}
 	if values == nil {
@@ -220,7 +222,7 @@ func burstAdjust(val int, percentage int) (int, bool) {
 */
 
 func (r *rateLimiter) enableRateLimiter(enabled bool) {
-	if r.table == nil {
+	if r.table == nil || r.IsNil() {
 		return
 	}
 	r.table.mu.Lock()
@@ -233,7 +235,7 @@ func (r *rateLimiter) enableRateLimiter(enabled bool) {
 }
 
 func (r *rateLimiter) setRateLimiter(limit rate.Limit, burst int) {
-	if r.table == nil {
+	if r.table == nil || r.IsNil() {
 		return
 	}
 	r.table.mu.Lock()

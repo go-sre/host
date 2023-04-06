@@ -27,6 +27,7 @@ const (
 // State - defines enabled state
 type State interface {
 	IsEnabled() bool
+	IsNil() bool
 	Enable()
 	Disable()
 }

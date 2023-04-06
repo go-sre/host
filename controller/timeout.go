@@ -71,7 +71,7 @@ func timeoutState(m map[string]string, t *timeout) {
 }
 
 func (t *timeout) Signal(values url.Values) error {
-	if t.name == NilBehaviorName {
+	if t.IsNil() {
 		return errors.New("invalid signal: timeout is not configured")
 	}
 	if values == nil {
@@ -94,6 +94,8 @@ func (t *timeout) Signal(values url.Values) error {
 }
 
 func (t *timeout) IsEnabled() bool { return t.config.Enabled }
+
+func (t *timeout) IsNil() bool { return t.name == NilBehaviorName }
 
 func (t *timeout) Enable() {
 	if t.IsEnabled() {
@@ -121,7 +123,7 @@ func (t *timeout) Duration() time.Duration {
 }
 
 func (t *timeout) enableTimeout(enable bool) {
-	if t.table == nil {
+	if t.table == nil || t.IsNil() {
 		return
 	}
 	t.table.mu.Lock()
@@ -134,7 +136,7 @@ func (t *timeout) enableTimeout(enable bool) {
 }
 
 func (t *timeout) setTimeout(duration time.Duration) {
-	if t.table == nil || t.config.Duration == duration {
+	if t.table == nil || t.IsNil() || t.config.Duration == duration {
 		return
 	}
 	t.table.mu.Lock()
