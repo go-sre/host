@@ -109,7 +109,7 @@ func init() {
 	})
 
 	controller.EgressTable().AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(true, 504, time.Millisecond)))
-	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(true, 2000, 0, 503)))
+	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(true, 503, 2000, 10)))
 	controller.EgressTable().AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(true, 504, time.Millisecond), controller.NewRetryConfig(true, 0, 0, 0, []int{503, 504})))
 	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl, nil, nil)))
 
@@ -187,7 +187,7 @@ func Example_Controller_Default_RateLimit() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route_name":"rate-limit-route","method":"GET","host":"www.twitter.com","path":"","protocol":"HTTP/1.1","status_code":301,"status_flags":"","bytes_received":-1,"bytes_sent":0,"timeout_ms":-1,"rate-limit":0,"rate-burst":503,"retry":false,"retry-rate-limit":-1,"retry-rate-burst":-1,"proxy":false}]
+	//test: Write() -> [{"traffic":"egress","route_name":"rate-limit-route","method":"GET","host":"www.twitter.com","path":"","protocol":"HTTP/1.1","status_code":301,"status_flags":"","bytes_received":-1,"bytes_sent":0,"timeout_ms":-1,"rate-limit":2000,"rate-burst":10,"retry":false,"retry-rate-limit":-1,"retry-rate-burst":-1,"proxy":false}]
 	//test: Write() -> [{"traffic":"egress","route_name":"*","method":"GET","host":"","path":"/","protocol":"","status_code":200,"status_flags":"","bytes_received":-1,"bytes_sent":0,"timeout_ms":-1,"rate-limit":-1,"rate-burst":-1,"retry":false,"retry-rate-limit":-1,"retry-rate-burst":-1,"proxy":false}]
 	//test: RoundTrip(handler:true) -> [status_code:200] [err:<nil>]
 

@@ -20,6 +20,8 @@ type RateLimiter interface {
 	Actuator
 	Allow() bool
 	StatusCode() int
+	Limit() rate.Limit
+	Burst() int
 }
 
 type RateLimiterConfig struct {
@@ -152,10 +154,16 @@ func (r *rateLimiter) StatusCode() int {
 	return r.config.StatusCode
 }
 
-/*
-func (r *rateLimiter) limitAndBurst() (rate.Limit, int) {
-	return r.config.Limit, r.config.Burst
+func (r *rateLimiter) Limit() rate.Limit {
+	return r.config.Limit
 }
+
+func (r *rateLimiter) Burst() int {
+	return r.config.Burst
+}
+
+/*
+
 
 func (r *rateLimiter) setLimit(limit rate.Limit) {
 	if r.config.Limit == limit {

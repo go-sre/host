@@ -18,14 +18,15 @@ const (
 	DurationKey  = "duration"
 	EnableKey    = "enable"
 	PatternKey   = "pattern"
+	WaitKey      = "wait"
 
 	FalseValue = "false"
 	TrueValue  = "true"
 
-	BehaviorTimeout   = "timeout"
-	BehaviorRetry     = "retry"
-	BehaviorRateLimit = "rate-limit"
-	BehaviorProxy     = "proxy"
+	TimeoutBehavior   = "timeout"
+	RetryBehavior     = "retry"
+	RateLimitBehavior = "rate-limit"
+	ProxyBehavior     = "proxy"
 )
 
 type Actuator interface {

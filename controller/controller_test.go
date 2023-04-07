@@ -91,7 +91,7 @@ func ExampleController_Signal() {
 	ctrl, errs := newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	err := ctrl.Signal(behaviorValues(BehaviorTimeout))
+	err := ctrl.Signal(behaviorValues(TimeoutBehavior))
 	fmt.Printf("test: Signal(timeout) -> [err:%v]\n", err)
 
 	err = ctrl.Signal(behaviorValues("invalid-behavior"))

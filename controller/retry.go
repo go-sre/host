@@ -19,6 +19,9 @@ type Retry interface {
 	State
 	Actuator
 	IsRetryable(statusCode int) (ok bool, status string)
+	Limit() rate.Limit
+	Burst() int
+	Wait() time.Duration
 }
 
 type RetryConfig struct {
@@ -146,6 +149,19 @@ func (r *retry) Signal(values url.Values) error {
 			r.setRetryRateLimiter(limit, burst)
 		}
 	}
+	if values.Has(WaitKey) {
+		duration, err1 := ParseDuration(values.Get(WaitKey))
+		if err1 != nil {
+			return err1
+		}
+		if duration < 0 {
+			return errors.New("invalid configuration: wait duration is < 0")
+		}
+		if duration != r.Wait() {
+			r.setWait(duration)
+		}
+	}
+
 	return nil
 }
 
@@ -170,6 +186,18 @@ func (r *retry) IsRetryable(statusCode int) (bool, string) {
 		}
 	}
 	return false, ""
+}
+
+func (r *retry) Limit() rate.Limit {
+	return r.config.Limit
+}
+
+func (r *retry) Burst() int {
+	return r.config.Burst
+}
+
+func (r *retry) Wait() time.Duration {
+	return r.config.Wait
 }
 
 /*
@@ -235,6 +263,19 @@ func (r *retry) setRetryRateLimiter(limit rate.Limit, burst int) {
 		c.config.Burst = burst
 		// Not cloning the limiter as an old reference will not cause stale data when logging
 		c.rateLimiter = rate.NewLimiter(limit, burst)
+		r.table.update(r.name, cloneController[*retry](ctrl, c))
+	}
+}
+
+func (r *retry) setWait(duration time.Duration) {
+	if r.table == nil || r.IsNil() || r.config.Wait == duration {
+		return
+	}
+	r.table.mu.Lock()
+	defer r.table.mu.Unlock()
+	if ctrl, ok := r.table.controllers[r.name]; ok {
+		c := cloneRetry(ctrl.retry)
+		c.config.Wait = duration
 		r.table.update(r.name, cloneController[*retry](ctrl, c))
 	}
 }

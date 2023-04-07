@@ -164,16 +164,16 @@ func (c *controller) Signal(values url.Values) error {
 		return nil
 	}
 	switch values.Get(BehaviorKey) {
-	case BehaviorTimeout:
+	case TimeoutBehavior:
 		return c.Timeout().Signal(values)
 		break
-	case BehaviorRetry:
+	case RetryBehavior:
 		return c.Retry().Signal(values)
 		break
-	case BehaviorRateLimit:
+	case RateLimitBehavior:
 		return c.RateLimiter().Signal(values)
 		break
-	case BehaviorProxy:
+	case ProxyBehavior:
 		return c.Proxy().Signal(values)
 		break
 	}
