@@ -9,14 +9,12 @@ import (
 )
 
 const (
-	TrafficKey  = "traffic"
-	RouteKey    = "route"
 	BehaviorKey = "behavior"
 
 	RateLimitKey = "limit"
 	RateBurstKey = "burst"
 	DurationKey  = "duration"
-	EnableKey    = "enable"
+	EnabledKey   = "enabled"
 	PatternKey   = "pattern"
 	WaitKey      = "wait"
 	PercentKey   = "pct"
@@ -36,31 +34,12 @@ type Actuator interface {
 	Signal(values url.Values) error
 }
 
-func IsEgressTraffic(values url.Values) bool {
-	if values == nil {
-		return false
-	}
-	if values.Get(TrafficKey) == EgressTraffic {
-		return true
-	}
-	return false
-}
-
-func IsIngressTraffic(values url.Values) bool {
-	if values == nil {
-		return false
-	}
-	if values.Get(TrafficKey) == IngressTraffic {
-		return true
-	}
-	return false
-}
-
+// IsDisable returns true if the values contains a key named "enabled" and its value is "false".
 func IsDisable(values url.Values) bool {
 	if values == nil {
 		return false
 	}
-	if values.Get(EnableKey) == FalseValue {
+	if values.Get(EnabledKey) == FalseValue {
 		return true
 	}
 	return false
@@ -80,10 +59,10 @@ func UpdateEnable(s State, values url.Values) (stateChange bool, err error) {
 	if s == nil {
 		return false, errors.New("invalid argument: state is nil")
 	}
-	if !values.Has(EnableKey) {
+	if !values.Has(EnabledKey) {
 		return false, nil
 	}
-	v := values.Get(EnableKey)
+	v := values.Get(EnabledKey)
 	if v == TrueValue && !s.IsEnabled() {
 		s.Enable()
 		return true, nil

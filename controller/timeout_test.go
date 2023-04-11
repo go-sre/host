@@ -9,9 +9,9 @@ import (
 func enableValues(enable bool) url.Values {
 	v := make(url.Values)
 	if enable {
-		v.Add(EnableKey, TrueValue)
+		v.Add(EnabledKey, TrueValue)
 	} else {
-		v.Add(EnableKey, FalseValue)
+		v.Add(EnabledKey, FalseValue)
 	}
 	return v
 }
