@@ -63,7 +63,7 @@ func ExampleController_newController_Error() {
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, 0))
+	route = NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, -1))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
@@ -77,11 +77,11 @@ func ExampleController_newController_Error() {
 
 	//Output:
 	//test: newController() -> [errs:[]]
-	//test: newController() -> [errs:[invalid configuration: Retry status codes are empty]]
-	//test: newController() -> [errs:[invalid configuration: Timeout duration is <= 0]]
+	//test: newController() -> [errs:[invalid configuration: retry status codes are empty [test]]]
+	//test: newController() -> [errs:[invalid configuration: Timeout duration is < 0 [test]]]
 	//test: newController() -> [errs:[]]
-	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is < 0]]
-
+	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is < 0 [test]]]
+	
 }
 
 func ExampleController_Signal() {

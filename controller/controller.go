@@ -212,7 +212,10 @@ func (c *controller) LogHttpIngress(start time.Time, duration time.Duration, req
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
 	resp.ContentLength = written
-	defaultLogFn("ingress", start, duration, req, resp, statusFlags, c.state())
+	if defaultExtractFn != nil {
+		defaultExtractFn(IngressTraffic, start, duration, req, resp, statusFlags, c.state())
+	}
+	defaultLogFn(IngressTraffic, start, duration, req, resp, statusFlags, c.state())
 }
 
 func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool) {
@@ -222,7 +225,9 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 	state := c.state()
 	retryState(state, c.retry, retry)
 	proxyState(state, c.proxy)
-
+	if defaultExtractFn != nil {
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+	}
 	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
 }
 
@@ -236,5 +241,9 @@ func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCo
 
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
+
+	if defaultExtractFn != nil {
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+	}
 	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
 }

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func SignalHandler(w http.ResponseWriter, r *http.Request) {
+func ActuatorHandler(w http.ResponseWriter, r *http.Request) {
 	if r == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
