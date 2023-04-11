@@ -81,7 +81,7 @@ func ExampleController_newController_Error() {
 	//test: newController() -> [errs:[invalid configuration: Timeout duration is < 0 [test]]]
 	//test: newController() -> [errs:[]]
 	//test: newController() -> [errs:[invalid configuration: RateLimiter limit is < 0 [test]]]
-	
+
 }
 
 func ExampleController_Signal() {
