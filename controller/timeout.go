@@ -90,6 +90,11 @@ func (t *timeout) Signal(values url.Values) error {
 			t.setTimeout(duration)
 		}
 	}
+	pct := ParsePercentage(values)
+	if pct != NilPercentageValue {
+		val := t.Duration() + time.Duration(pct*float64(t.Duration()))
+		t.setTimeout(val)
+	}
 	return nil
 }
 

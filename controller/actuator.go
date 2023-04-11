@@ -19,6 +19,7 @@ const (
 	EnableKey    = "enable"
 	PatternKey   = "pattern"
 	WaitKey      = "wait"
+	PercentKey   = "pct"
 
 	FalseValue = "false"
 	TrueValue  = "true"
@@ -27,6 +28,8 @@ const (
 	RetryBehavior     = "retry"
 	RateLimitBehavior = "rate-limit"
 	ProxyBehavior     = "proxy"
+
+	NilPercentageValue = float64(-1)
 )
 
 type Actuator interface {
@@ -126,4 +129,24 @@ func ParseLimitAndBurst(values url.Values) (rate.Limit, int, error) {
 		}
 	}
 	return limit, burst, nil
+}
+
+func ParsePercentage(values url.Values) float64 {
+	if values == nil {
+		return NilPercentageValue
+	}
+	if values.Has(PercentKey) {
+		s := values.Get(PercentKey)
+		if len(s) > 0 {
+			temp, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				return NilPercentageValue
+			}
+			if temp <= 0 || temp > 1000 {
+				return NilPercentageValue
+			}
+			return temp / float64(100)
+		}
+	}
+	return NilPercentageValue
 }
