@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -61,13 +60,13 @@ func (t *timeout) validate() error {
 	return nil
 }
 
-func timeoutState(m map[string]string, t *timeout) {
-	var val int64 = -1
+func timeoutState(t *timeout) int {
+	var val int = -1
 
 	if t != nil && t.IsEnabled() {
-		val = int64(t.Duration() / time.Millisecond)
+		val = int(t.Duration() / time.Millisecond)
 	}
-	m[TimeoutName] = strconv.Itoa(int(val))
+	return val
 }
 
 func (t *timeout) Signal(values url.Values) error {

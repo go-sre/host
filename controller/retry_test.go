@@ -30,17 +30,18 @@ func ExampleRetry_State() {
 	tbl := newTable(true, false)
 
 	rt := newRetry("test-route3", tbl, NewRetryConfig(false, 100, 10, time.Millisecond*500, []int{503, 504}))
-	fmt.Printf("test: retryState(nil,nil,false) -> %v\n", retryState(nil, nil, false))
+	//fmt.Printf("test: retryState(nil,nil,false) -> %v\n", retryState(nil, nil, false))
 
-	fmt.Printf("test: retryState(nil,rt,true) -> %v\n", retryState(nil, rt, true))
+	limit, burst := retryState(rt)
+	fmt.Printf("test: retryState(rt) -> [limit:%v] [burst:%v]\n", limit, burst)
 
 	rt.config.Enabled = true
-	fmt.Printf("test: retryState(nil,rt,true) -> %v\n", retryState(nil, rt, true))
+	limit, burst = retryState(rt)
+	fmt.Printf("test: retryState(rt) -> [limit:%v] [burst:%v]\n", limit, burst)
 
 	//Output:
-	//test: retryState(nil,nil,false) -> map[retry:false retryBurst:-1 retryRateLimit:-1]
-	//test: retryState(nil,rt,true) -> map[retry:false retryBurst:-1 retryRateLimit:-1]
-	//test: retryState(nil,rt,true) -> map[retry:true retryBurst:10 retryRateLimit:100]
+	//test: retryState(rt) -> [limit:-1] [burst:-1]
+	//test: retryState(rt) -> [limit:100] [burst:10]
 
 }
 
@@ -73,6 +74,8 @@ func ExampleRetry_Toggle() {
 
 }
 
+/*
+
 func ExampleRetry_IsRetryable_Disabled() {
 	name := "test-route"
 	config := NewRetryConfig(false, 100, 10, 0, []int{503, 504})
@@ -98,6 +101,8 @@ func ExampleRetry_IsRetryable_Disabled() {
 
 }
 
+
+*/
 func ExampleRetry_IsRetryable_StatusCode() {
 	name := "test-route"
 	config := NewRetryConfig(false, 100, 10, 0, []int{503, 504})

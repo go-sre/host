@@ -2,15 +2,13 @@ package controller
 
 import (
 	"fmt"
+	"golang.org/x/time/rate"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-func FmtLog(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) string {
-	if controllerState == nil {
-		controllerState = make(map[string]string)
-	}
+func FmtLog(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) string {
 	d := int(duration / time.Duration(1e6))
 	s := fmt.Sprintf("start:%v ,"+
 		"duration:%v ,"+
@@ -23,17 +21,15 @@ func FmtLog(traffic string, start time.Time, duration time.Duration, req *http.R
 		"host:%v, "+
 		"path:%v, "+
 		"status-code:%v, "+
-		"timeout_ms:%v, "+
+		"timeout-ms:%v, "+
 		"rate-limit:%v, "+
 		"rate-burst:%v, "+
-		"retry:%v, "+
-		"retry-rate-limit:%v, "+
-		"retry-rate-burst:%v, "+
+		"proxied:%v, "+
 		"status-flags:%v",
-		FmtTimestamp(start),             //l.Value(StartTimeOperator),
-		strconv.Itoa(d),                 //l.Value(DurationOperator),
-		traffic,                         //l.Value(TrafficOperator),
-		controllerState[ControllerName], //l.Value(RouteNameOperator),
+		FmtTimestamp(start), //l.Value(StartTimeOperator),
+		strconv.Itoa(d),     //l.Value(DurationOperator),
+		traffic,             //l.Value(TrafficOperator),
+		routeName,           //l.Value(RouteNameOperator),
 
 		req.Header.Get(RequestIdHeaderName), //l.Value(RequestIdOperator),
 		req.Proto,                           //l.Value(RequestProtocolOperator),
@@ -44,15 +40,16 @@ func FmtLog(traffic string, start time.Time, duration time.Duration, req *http.R
 
 		resp.StatusCode, //l.Value(ResponseStatusCodeOperator),
 
-		controllerState[TimeoutName], //Tl.Value(TimeoutDurationOperator),
+		timeout, //Tl.Value(TimeoutDurationOperator),
 
-		controllerState[RateLimitName], //l.Value(RateLimitOperator),
-		controllerState[RateBurstName], //l.Value(RateBurstOperator),
+		rateLimit, //l.Value(RateLimitOperator),
+		rateBurst, //l.Value(RateBurstOperator),
 
-		controllerState[RetryName],          //l.Value(RetryOperator),
-		controllerState[RetryRateLimitName], //l.Value(RetryRateLimitOperator),
-		controllerState[RetryRateBurstName], //l.Value(RetryRateBurstOperator),
+		//controllerState[RetryName],          //l.Value(RetryOperator),
+		//controllerState[RetryRateLimitName], //l.Value(RetryRateLimitOperator),
+		//controllerState[RetryRateBurstName], //l.Value(RetryRateBurstOperator),
 
+		proxied,
 		statusFlags, //l.Value(StatusFlagsOperator),
 	)
 

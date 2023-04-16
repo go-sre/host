@@ -48,17 +48,17 @@ func ExampleProxy_State() {
 	t := newTable(true, false)
 	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil, nil))
 
-	m := make(map[string]string, 16)
-	proxyState(m, p)
-	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
-	m = make(map[string]string, 16)
+	//m := make(map[string]string, 16)
+	//proxyState(p)
+	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v]\n", p.IsEnabled(), proxyState(p))
+	//m = make(map[string]string, 16)
 	p.config.Enabled = true
-	proxyState(m, p)
-	fmt.Printf("test: proxyState(map,p) -> [enabled:%v] %v\n", p.IsEnabled(), m)
+
+	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v]\n", p.IsEnabled(), proxyState(p))
 
 	//Output:
-	//test: proxyState(map,p) -> [enabled:false] map[proxy:false]
-	//test: proxyState(map,p) -> [enabled:true] map[proxy:true]
+	//test: proxyState(p) -> [enabled:false] [proxied:]
+	//test: proxyState(p) -> [enabled:true] [proxied:true]
 
 }
 

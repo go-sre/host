@@ -29,7 +29,7 @@ func writeMarkup(sb *strings.Builder, name, value string, stringValue bool) {
 	} else {
 		sb.WriteString(",")
 	}
-	if value == "" {
+	if len(value) == 0 {
 		sb.WriteString(fmt.Sprintf(markupNull, name))
 	} else {
 		format := markupString

@@ -22,10 +22,10 @@ var operators = map[string]*Operator{
 	TimeoutDurationOperator: {"timeout_ms", TimeoutDurationOperator},
 	RateLimitOperator:       {"rate_limit", RateLimitOperator},
 	RateBurstOperator:       {"rate_burst", RateBurstOperator},
-	RetryOperator:           {"retry", RetryOperator},
-	RetryRateLimitOperator:  {"retry_rate_limit", RetryRateLimitOperator},
-	RetryRateBurstOperator:  {"retry_rate_burst", RetryRateBurstOperator},
-	ProxyOperator:           {"proxy", ProxyOperator},
+	//RetryOperator:           {"retry", RetryOperator},
+	//RetryRateLimitOperator:  {"retry_rate_limit", RetryRateLimitOperator},
+	//RetryRateBurstOperator:  {"retry_rate_burst", RetryRateBurstOperator},
+	ProxyOperator: {"proxy", ProxyOperator},
 
 	// Response
 	ResponseStatusCodeOperator:    {"status_code", ResponseStatusCodeOperator},

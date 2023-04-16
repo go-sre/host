@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 )
 
 type Header struct {
@@ -70,12 +69,14 @@ func (p *proxy) validate() error {
 	return nil
 }
 
-func proxyState(m map[string]string, p *proxy) {
-	if p != nil {
-		m[ProxyName] = strconv.FormatBool(p.IsEnabled())
-	} else {
-		m[ProxyName] = strconv.FormatBool(false)
+func proxyState(p *proxy) string {
+	if !p.IsEnabled() {
+		return ""
 	}
+	if len(p.Pattern()) > 0 {
+		return "true"
+	}
+	return "false"
 }
 
 func (p *proxy) Signal(values url.Values) error {

@@ -25,10 +25,10 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 	ctrl.UpdateHeaders(req)
 	if rlc := ctrl.RateLimiter(); rlc.IsEnabled() && !rlc.Allow() {
 		resp := &http.Response{Request: req, StatusCode: rlc.StatusCode()}
-		ctrl.LogHttpEgress(start, time.Since(start), req, resp, controller.RateLimitFlag, false)
+		ctrl.LogHttpEgress(start, time.Since(start), req, resp, controller.RateLimitFlag)
 		return resp, nil
 	}
-	if pc := ctrl.Proxy(); pc.IsEnabled() {
+	if pc := ctrl.Proxy(); pc.IsEnabled() && len(pc.Pattern()) > 0 {
 		req.URL = pc.BuildUrl(req.URL)
 		if req.URL != nil {
 			req.Host = req.URL.Host
@@ -42,15 +42,21 @@ func (w *controllerWrapper) RoundTrip(req *http.Request) (*http.Response, error)
 		return resp, err
 	}
 	if rc := ctrl.Retry(); rc.IsEnabled() {
+		var retryFlags string
+
+		statusFlags = controller.RetryFlag
 		prevFlags := statusFlags
-		retry, statusFlags = rc.IsRetryable(resp.StatusCode)
+		retry, retryFlags = rc.IsRetryable(resp.StatusCode)
 		if retry {
-			ctrl.LogHttpEgress(start, time.Since(start), req, resp, prevFlags, false)
+			ctrl.LogHttpEgress(start, time.Since(start), req, resp, prevFlags)
 			start = time.Now()
-			resp, err, statusFlags = w.exchange(ctrl.Timeout(), req)
+			resp, err, retryFlags = w.exchange(ctrl.Timeout(), req)
+		}
+		if len(retryFlags) > 0 {
+			statusFlags = statusFlags + "-" + retryFlags
 		}
 	}
-	ctrl.LogHttpEgress(start, time.Since(start), req, resp, statusFlags, retry)
+	ctrl.LogHttpEgress(start, time.Since(start), req, resp, statusFlags)
 	return resp, err
 }
 

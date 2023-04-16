@@ -48,19 +48,19 @@ func ExampleTimeout_State() {
 	t := newTimeout("test-route", newTable(true, false), NewTimeoutConfig(true, 0, time.Millisecond*2000))
 	fmt.Printf("test: newTimeout() -> [name:%v] [state:%v]\n", t.name, t.config)
 
-	m := make(map[string]string, 16)
-	timeoutState(m, t)
-	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] %v\n", t.IsEnabled(), m)
+	//m := make(map[string]string, 16)
+
+	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] [timeout:%v]\n", t.IsEnabled(), timeoutState(t))
 
 	t.config.Enabled = false
-	m = make(map[string]string, 16)
-	timeoutState(m, t)
-	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] %v\n", t.IsEnabled(), m)
+	//m = make(map[string]string, 16)
+	//timeoutState(m, t)
+	fmt.Printf("test: timeoutState(map,t) -> [enabled:%v] [timeout:%v]\n", t.IsEnabled(), timeoutState(t))
 
 	//Output:
 	//test: newTimeout() -> [name:test-route] [state:{true 504 2s}]
-	//test: timeoutState(map,t) -> [enabled:true] map[timeout:2000]
-	//test: timeoutState(map,t) -> [enabled:false] map[timeout:-1]
+	//test: timeoutState(map,t) -> [enabled:true] [timeout:2000]
+	//test: timeoutState(map,t) -> [enabled:false] [timeout:-1]
 
 }
 

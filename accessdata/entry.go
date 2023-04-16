@@ -2,6 +2,7 @@ package accessdata
 
 import (
 	"fmt"
+	"golang.org/x/time/rate"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,15 +15,18 @@ const (
 	IngressTraffic = "ingress"
 	PingTraffic    = "ping"
 
-	PingName           = "ping"
-	TimeoutName        = "timeout"
-	ProxyName          = "proxy"
-	RetryName          = "retry"
-	RetryRateLimitName = "retryRateLimit"
-	RetryRateBurstName = "retryBurst"
-	RateLimitName      = "rateLimit"
-	RateBurstName      = "burst"
-	ControllerName     = "name"
+	/*
+		PingName           = "ping"
+		TimeoutName        = "timeout"
+		ProxyName          = "proxy"
+		RetryName          = "retry"
+		RetryRateLimitName = "retryRateLimit"
+		RetryRateBurstName = "retryBurst"
+		RateLimitName      = "rateLimit"
+		RateBurstName      = "burst"
+		ControllerName     = "name"
+
+	*/
 )
 
 // Accessor - function type
@@ -33,7 +37,7 @@ type Entry struct {
 	Traffic   string
 	Start     time.Time
 	Duration  time.Duration
-	CtrlState map[string]string
+	RouteName string //CtrlState map[string]string
 
 	// Request
 	Url      string
@@ -47,40 +51,52 @@ type Entry struct {
 	StatusCode    int
 	BytesSent     int64
 	BytesReceived int64
-	StatusFlags   string
+
+	// State and
+	Timeout     int
+	RateLimit   rate.Limit
+	RateBurst   int
+	Proxied     string
+	StatusFlags string
 }
 
 func NewEmptyEntry() *Entry {
 	return new(Entry)
 }
 
-func NewEntry(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) *Entry {
+func NewEntry(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
 	e := new(Entry)
 	e.Traffic = traffic
 	e.Start = start
 	e.Duration = duration
-	if controllerState == nil {
-		controllerState = make(map[string]string, 1)
-	} else {
-		if s, ok := controllerState[PingName]; ok && s == "true" {
-			e.Traffic = PingTraffic
-		}
-	}
-	e.CtrlState = controllerState
+	e.RouteName = routeName
+	//if controllerState == nil {
+	//	controllerState = make(map[string]string, 1)
+	//} else {
+	//	if s, ok := controllerState[PingName]; ok && s == "true" {
+	//		e.Traffic = PingTraffic
+	//	}
+	//}
+	//e.CtrlState = controllerState
 	e.AddRequest(req)
 	e.AddResponse(resp)
+
+	e.Timeout = timeout
+	e.RateLimit = rateLimit
+	e.RateBurst = rateBurst
+	e.Proxied = proxied
 	e.StatusFlags = statusFlags
 	return e
 }
 
 // NewEgressEntry - create an Entry for egress traffic
-func NewEgressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) *Entry {
-	return NewEntry(EgressTraffic, start, duration, req, resp, statusFlags, controllerState)
+func NewEgressEntry(start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
+	return NewEntry(EgressTraffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
 }
 
 // NewIngressEntry - create an Entry for ingress traffic
-func NewIngressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) *Entry {
-	return NewEntry(IngressTraffic, start, duration, req, resp, statusFlags, controllerState)
+func NewIngressEntry(start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
+	return NewEntry(IngressTraffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
 }
 
 func (l *Entry) AddResponse(resp *http.Response) {
@@ -193,21 +209,21 @@ func (l *Entry) Value(value string) string {
 
 	// Controller State
 	case RouteNameOperator:
-		return l.CtrlState[ControllerName]
+		return l.RouteName
 	case TimeoutDurationOperator:
-		return l.CtrlState[TimeoutName]
+		return strconv.Itoa(l.Timeout)
 	case RateLimitOperator:
-		return l.CtrlState[RateLimitName]
+		return fmt.Sprintf("%v", l.RateLimit)
 	case RateBurstOperator:
-		return l.CtrlState[RateBurstName]
+		return strconv.Itoa(l.RateBurst)
 	case ProxyOperator:
-		return l.CtrlState[ProxyName]
-	case RetryOperator:
-		return l.CtrlState[RetryName]
-	case RetryRateLimitOperator:
-		return l.CtrlState[RetryRateLimitName]
-	case RetryRateBurstOperator:
-		return l.CtrlState[RetryRateBurstName]
+		return l.Proxied
+		//case RetryOperator:
+		//	return l.CtrlState[RetryName]
+		//case RetryRateLimitOperator:
+		//		return l.CtrlState[RetryRateLimitName]
+		//	case RetryRateBurstOperator:
+		//		return l.CtrlState[RetryRateBurstName]
 	}
 	if strings.HasPrefix(value, RequestReferencePrefix) {
 		name := requestOperatorHeaderName(value)
@@ -234,9 +250,7 @@ func (l *Entry) String() string {
 			"timeout:%v, "+
 			"rate-limit:%v, "+
 			"rate-burst:%v, "+
-			"retry:%v, "+
-			"retry-rate-limit:%v, "+
-			"retry-rate-burst:%v, "+
+			"proxy:%v, "+
 			"status-flags:%v",
 		//l.Value(StartTimeOperator),
 		//l.Value(DurationOperator),
@@ -255,9 +269,7 @@ func (l *Entry) String() string {
 		l.Value(RateLimitOperator),
 		l.Value(RateBurstOperator),
 
-		l.Value(RetryOperator),
-		l.Value(RetryRateLimitOperator),
-		l.Value(RetryRateBurstOperator),
+		l.Value(ProxyOperator),
 
 		l.Value(StatusFlagsOperator),
 	)

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"golang.org/x/time/rate"
 	"net/http"
 	"time"
 )
@@ -13,7 +14,7 @@ type HttpMatcher func(req *http.Request) (routeName string, ok bool)
 type UriMatcher func(uri string, method string) (routeName string, ok bool)
 
 // OutputHandler - type for output handling
-type OutputHandler func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string)
+type OutputHandler func(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string)
 
 // SetLogFn - configuration for logging function
 func SetLogFn(fn OutputHandler) {
@@ -22,8 +23,8 @@ func SetLogFn(fn OutputHandler) {
 	}
 }
 
-var defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, controllerState map[string]string) {
-	s := FmtLog(traffic, start, duration, req, resp, statusFlags, controllerState)
+var defaultLogFn = func(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) {
+	s := FmtLog(traffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
 	fmt.Printf("{%v}\n", s)
 }
 

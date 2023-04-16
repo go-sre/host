@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -86,25 +85,27 @@ func (r *retry) validate() error {
 	return nil
 }
 
-func retryState(m map[string]string, r *retry, retried bool) map[string]string {
+func retryState(r *retry) (rate.Limit, int) {
 	var limit rate.Limit = -1
 	var burst = -1
-	var name = "false"
+	//var name = "false"
 	if r != nil && r.IsEnabled() {
-		name = strconv.FormatBool(retried)
+		//	name = strconv.FormatBool(retried)
 		limit = r.config.Limit
 		if limit == rate.Inf {
 			limit = RateLimitInfValue
 		}
 		burst = r.config.Burst
 	}
-	if m == nil {
-		m = make(map[string]string, 16)
-	}
-	m[RetryName] = name
-	m[RetryRateLimitName] = fmt.Sprintf("%v", limit)
-	m[RetryRateBurstName] = strconv.Itoa(burst)
-	return m
+	return limit, burst
+
+	//if m == nil {
+	//	m = make(map[string]string, 16)
+	//}
+	//m[RetryName] = name
+	//m[RetryRateLimitName] = fmt.Sprintf("%v", limit)
+	//m[RetryRateBurstName] = strconv.Itoa(burst)
+	//return m
 
 }
 
@@ -166,9 +167,6 @@ func (r *retry) Signal(values url.Values) error {
 }
 
 func (r *retry) IsRetryable(statusCode int) (bool, string) {
-	if !r.IsEnabled() {
-		return false, NotEnabledFlag
-	}
 	if statusCode < http.StatusInternalServerError {
 		return false, ""
 	}

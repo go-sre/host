@@ -6,7 +6,6 @@ import (
 	"golang.org/x/time/rate"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 const (
@@ -80,7 +79,7 @@ func (r *rateLimiter) validate() error {
 	return nil
 }
 
-func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
+func rateLimiterState(r *rateLimiter) (rate.Limit, int) {
 	var limit rate.Limit = -1
 	var burst = -1
 
@@ -91,12 +90,14 @@ func rateLimiterState(m map[string]string, r *rateLimiter) map[string]string {
 		}
 		burst = r.config.Burst
 	}
-	if m == nil {
-		m = make(map[string]string, 16)
-	}
-	m[RateLimitName] = fmt.Sprintf("%v", limit)
-	m[RateBurstName] = strconv.Itoa(burst)
-	return m
+	return limit, burst
+
+	//if m == nil {
+	//		m = make(map[string]string, 16)
+	//	}
+	//	m[RateLimitName] = fmt.Sprintf("%v", limit)
+	//	m[RateBurstName] = strconv.Itoa(burst)
+	//	return m
 }
 
 func (r *rateLimiter) IsEnabled() bool { return r.config.Enabled }

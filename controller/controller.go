@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"golang.org/x/time/rate"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -20,8 +22,7 @@ const (
 
 	RateLimitFlag       = "RL"
 	UpstreamTimeoutFlag = "UT"
-	HostTimeoutFlag     = "HT"
-	NotEnabledFlag      = "NE"
+	RetryFlag           = "RT"
 )
 
 // State - defines enabled state
@@ -42,7 +43,7 @@ type Controller interface {
 	Proxy() Proxy
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
-	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool)
+	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string)
 	LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string)
 	t() *controller
 }
@@ -184,17 +185,6 @@ func (c *controller) t() *controller {
 	return c
 }
 
-func (c *controller) state() map[string]string {
-	state := make(map[string]string, 12)
-	state[ControllerName] = c.Name()
-	if c.ping {
-		state[PingName] = "true"
-	}
-	timeoutState(state, c.timeout)
-	rateLimiterState(state, c.rateLimiter)
-	return state
-}
-
 func (c *controller) UpdateHeaders(req *http.Request) {
 	if req == nil || req.Header == nil {
 		return
@@ -212,38 +202,43 @@ func (c *controller) LogHttpIngress(start time.Time, duration time.Duration, req
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
 	resp.ContentLength = written
-	if defaultExtractFn != nil {
-		defaultExtractFn(IngressTraffic, start, duration, req, resp, statusFlags, c.state())
+	traffic := IngressTraffic
+	if c.ping {
+		traffic = PingTraffic
 	}
-	defaultLogFn(IngressTraffic, start, duration, req, resp, statusFlags, c.state())
+	limit, burst := rateLimiterState(c.rateLimiter)
+	if defaultExtractFn != nil {
+		defaultExtractFn(traffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+	}
+	defaultLogFn(traffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
 }
 
-func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string, retry bool) {
+func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string) {
 	if c.name == NilControllerName {
 		return
 	}
-	state := c.state()
-	retryState(state, c.retry, retry)
-	proxyState(state, c.proxy)
-	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+	var limit rate.Limit
+	var burst int
+	if strings.HasPrefix(statusFlags, RetryFlag) {
+		limit, burst = retryState(c.retry)
+	} else {
+		limit, burst = rateLimiterState(c.rateLimiter)
 	}
-	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+	if defaultExtractFn != nil {
+		defaultExtractFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+	}
+	defaultLogFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
 }
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
-	state := c.state()
-	retryState(state, c.retry, false)
-	proxyState(state, c.proxy)
-
 	req, _ := http.NewRequest(method, uri, nil)
 	req.Header.Add(RequestIdHeaderName, requestId)
 
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
-
+	limit, burst := rateLimiterState(c.rateLimiter)
 	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+		defaultExtractFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
 	}
-	defaultLogFn(EgressTraffic, start, duration, req, resp, statusFlags, state)
+	defaultLogFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
 }

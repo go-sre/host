@@ -29,13 +29,13 @@ func Example_Value_Controller() {
 	data := Entry{}
 	fmt.Printf("test: Value(\"%v\") -> [%v]\n", name, data.Value(op))
 
-	data = Entry{CtrlState: map[string]string{ControllerName: name}}
+	data = Entry{RouteName: name}
 	fmt.Printf("test: Value(\"%v\") -> [route_name:%v]\n", name, data.Value(op))
 
-	data1 := NewEntry(IngressTraffic, start, time.Since(start), nil, nil, "", map[string]string{PingName: "true"})
+	data1 := NewEntry(PingTraffic, start, time.Since(start), name, nil, nil, -1, -1, -1, "", "")
 	fmt.Printf("test: Value(\"%v\") -> [traffic:%v]\n", name, data1.Value(TrafficOperator))
 
-	data = Entry{CtrlState: map[string]string{TimeoutName: "500"}}
+	data = Entry{Timeout: 500}
 	fmt.Printf("test: Value(\"%v\") -> [timeout:%v]\n", name, data.Value(TimeoutDurationOperator))
 
 	//Output:
@@ -106,10 +106,10 @@ func Example_EgressEntry() {
 	resp := new(http.Response)
 	resp.StatusCode = 201
 
-	e := NewEgressEntry(start, 0, req, resp, "RL", nil)
+	e := NewEgressEntry(start, 0, "egress-route", req, resp, -1, -1, -1, "", "RL")
 	fmt.Printf("test: String() -> {%v}\n", e)
 
 	//Output:
-	//test: String() -> {traffic:egress, route:, request-id:123-456-789, status-code:201, protocol:urn, method:QUERY, url:urn:postgres:query.access-accesslog, host:postgres, path:query.access-accesslog, timeout:, rate-limit:, rate-burst:, retry:, retry-rate-limit:, retry-rate-burst:, status-flags:RL}
+	//test: String() -> {traffic:egress, route:egress-route, request-id:123-456-789, status-code:201, protocol:urn, method:QUERY, url:urn:postgres:query.access-accesslog, host:postgres, path:query.access-accesslog, timeout:-1, rate-limit:-1, rate-burst:-1, proxy:, status-flags:RL}
 
 }
