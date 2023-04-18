@@ -85,7 +85,7 @@ func Example_CreateOperators() {
 	fmt.Printf("test: CreateOperators({}) -> [err:%v] [%v]\n", err, items)
 
 	//Output:
-	//test: CreateOperators({}) -> [err:<nil>] [[{traffic %TRAFFIC%} {start_time %START_TIME%} {duration_ms %DURATION%} {region %REGION%}]]
+	//test: CreateOperators({}) -> [err:<nil>] [[{traffic %TRAFFIC%} {start-time %START_TIME%} {duration-ms %DURATION%} {region %REGION%}]]
 
 }
 
@@ -120,7 +120,7 @@ func Example_InitOperators() {
 	//test: InitOperators("items: nil") -> [err:invalid operator: value is empty name] [[]]
 	//test: InitOperators("Value: INVALID") -> [err:invalid operator: value not found or invalid %INVALID] [[]]
 	//test: InitOperators("Value: static") -> [err:<nil>] [[{name static}]]
-	//test: InitOperators("Value: START_TIME") -> [err:<nil>] [[{start_time %START_TIME%}]]
+	//test: InitOperators("Value: START_TIME") -> [err:<nil>] [[{start-time %START_TIME%}]]
 	//test: InitOperators("Value: START_TIME") -> [err:<nil>] [[{duration %DURATION%}]]
 	//test: InitOperators("Value: START_TIME") -> [err:invalid operator: name is a duplicate [duration]] [[]]
 

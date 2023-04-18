@@ -23,6 +23,7 @@ const (
 	RateLimitFlag       = "RL"
 	UpstreamTimeoutFlag = "UT"
 	RetryFlag           = "RT"
+	RetryRateLimitFlag  = "RT-RL"
 )
 
 // State - defines enabled state
@@ -43,7 +44,7 @@ type Controller interface {
 	Proxy() Proxy
 	UpdateHeaders(req *http.Request)
 	LogHttpIngress(start time.Time, duration time.Duration, req *http.Request, statusCode int, written int64, statusFlags string)
-	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string)
+	LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, retry bool, statusFlags string)
 	LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string)
 	t() *controller
 }
@@ -208,26 +209,35 @@ func (c *controller) LogHttpIngress(start time.Time, duration time.Duration, req
 	}
 	limit, burst := rateLimiterState(c.rateLimiter)
 	if defaultExtractFn != nil {
-		defaultExtractFn(traffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+		defaultExtractFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
 	}
-	defaultLogFn(traffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+	defaultLogFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
 }
 
-func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, statusFlags string) {
+func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, retry bool, statusFlags string) {
 	if c.name == NilControllerName {
 		return
 	}
 	var limit rate.Limit
 	var burst int
-	if strings.HasPrefix(statusFlags, RetryFlag) {
+	var retryStr = ""
+
+	if c.retry.IsEnabled() {
+		if retry {
+			retryStr = "true"
+		} else {
+			retryStr = "false"
+		}
+	}
+	if strings.HasPrefix(statusFlags, RetryRateLimitFlag) || retry {
 		limit, burst = retryState(c.retry)
 	} else {
 		limit, burst = rateLimiterState(c.rateLimiter)
 	}
 	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, retryStr, proxyState(c.proxy), statusFlags)
 	}
-	defaultLogFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, retryStr, proxyState(c.proxy), statusFlags)
 }
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
@@ -238,7 +248,7 @@ func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCo
 	resp.StatusCode = statusCode
 	limit, burst := rateLimiterState(c.rateLimiter)
 	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
 	}
-	defaultLogFn(EgressTraffic, start, duration, c.Name(), req, resp, timeoutState(c.timeout), limit, burst, proxyState(c.proxy), statusFlags)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
 }

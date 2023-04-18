@@ -14,19 +14,6 @@ const (
 	EgressTraffic  = "egress"
 	IngressTraffic = "ingress"
 	PingTraffic    = "ping"
-
-	/*
-		PingName           = "ping"
-		TimeoutName        = "timeout"
-		ProxyName          = "proxy"
-		RetryName          = "retry"
-		RetryRateLimitName = "retryRateLimit"
-		RetryRateBurstName = "retryBurst"
-		RateLimitName      = "rateLimit"
-		RateBurstName      = "burst"
-		ControllerName     = "name"
-
-	*/
 )
 
 // Accessor - function type
@@ -56,7 +43,8 @@ type Entry struct {
 	Timeout     int
 	RateLimit   rate.Limit
 	RateBurst   int
-	Proxied     string
+	Retry       string
+	Proxy       string
 	StatusFlags string
 }
 
@@ -64,39 +52,33 @@ func NewEmptyEntry() *Entry {
 	return new(Entry)
 }
 
-func NewEntry(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
+func NewEntry(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
 	e := new(Entry)
 	e.Traffic = traffic
 	e.Start = start
 	e.Duration = duration
 	e.RouteName = routeName
-	//if controllerState == nil {
-	//	controllerState = make(map[string]string, 1)
-	//} else {
-	//	if s, ok := controllerState[PingName]; ok && s == "true" {
-	//		e.Traffic = PingTraffic
-	//	}
-	//}
-	//e.CtrlState = controllerState
+
 	e.AddRequest(req)
 	e.AddResponse(resp)
 
 	e.Timeout = timeout
 	e.RateLimit = rateLimit
 	e.RateBurst = rateBurst
-	e.Proxied = proxied
+	e.Retry = retry
+	e.Proxy = proxy
 	e.StatusFlags = statusFlags
 	return e
 }
 
 // NewEgressEntry - create an Entry for egress traffic
-func NewEgressEntry(start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
-	return NewEntry(EgressTraffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
+func NewEgressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
+	return NewEntry(EgressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, retry, proxy, statusFlags)
 }
 
 // NewIngressEntry - create an Entry for ingress traffic
-func NewIngressEntry(start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) *Entry {
-	return NewEntry(IngressTraffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
+func NewIngressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
+	return NewEntry(IngressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, retry, proxy, statusFlags)
 }
 
 func (l *Entry) AddResponse(resp *http.Response) {
@@ -217,9 +199,9 @@ func (l *Entry) Value(value string) string {
 	case RateBurstOperator:
 		return strconv.Itoa(l.RateBurst)
 	case ProxyOperator:
-		return l.Proxied
-		//case RetryOperator:
-		//	return l.CtrlState[RetryName]
+		return l.Proxy
+	case RetryOperator:
+		return l.Retry
 		//case RetryRateLimitOperator:
 		//		return l.CtrlState[RetryRateLimitName]
 		//	case RetryRateBurstOperator:
@@ -250,6 +232,7 @@ func (l *Entry) String() string {
 			"timeout:%v, "+
 			"rate-limit:%v, "+
 			"rate-burst:%v, "+
+			"retry:%v, "+
 			"proxy:%v, "+
 			"status-flags:%v",
 		//l.Value(StartTimeOperator),
@@ -269,6 +252,7 @@ func (l *Entry) String() string {
 		l.Value(RateLimitOperator),
 		l.Value(RateBurstOperator),
 
+		l.Value(RetryOperator),
 		l.Value(ProxyOperator),
 
 		l.Value(StatusFlagsOperator),

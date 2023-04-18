@@ -7,31 +7,31 @@ import (
 
 var operators = map[string]*Operator{
 	TrafficOperator:        {"traffic", TrafficOperator},
-	StartTimeOperator:      {"start_time", StartTimeOperator},
-	DurationOperator:       {"duration_ms", DurationOperator},
+	StartTimeOperator:      {"start-time", StartTimeOperator},
+	DurationOperator:       {"duration-ms", DurationOperator},
 	DurationStringOperator: {"duration", DurationStringOperator},
 
 	OriginRegionOperator:     {"region", OriginRegionOperator},
 	OriginZoneOperator:       {"zone", OriginZoneOperator},
-	OriginSubZoneOperator:    {"sub_zone", OriginSubZoneOperator},
+	OriginSubZoneOperator:    {"sub-zone", OriginSubZoneOperator},
 	OriginServiceOperator:    {"service", OriginServiceOperator},
-	OriginInstanceIdOperator: {"instance_id", OriginInstanceIdOperator},
+	OriginInstanceIdOperator: {"instance-id", OriginInstanceIdOperator},
 
 	// Route
-	RouteNameOperator:       {"route_name", RouteNameOperator},
-	TimeoutDurationOperator: {"timeout_ms", TimeoutDurationOperator},
-	RateLimitOperator:       {"rate_limit", RateLimitOperator},
-	RateBurstOperator:       {"rate_burst", RateBurstOperator},
-	//RetryOperator:           {"retry", RetryOperator},
+	RouteNameOperator:       {"route-name", RouteNameOperator},
+	TimeoutDurationOperator: {"timeout-ms", TimeoutDurationOperator},
+	RateLimitOperator:       {"rate-limit", RateLimitOperator},
+	RateBurstOperator:       {"rate-burst", RateBurstOperator},
+	RetryOperator:           {"retry", RetryOperator},
 	//RetryRateLimitOperator:  {"retry_rate_limit", RetryRateLimitOperator},
 	//RetryRateBurstOperator:  {"retry_rate_burst", RetryRateBurstOperator},
 	ProxyOperator: {"proxy", ProxyOperator},
 
 	// Response
-	ResponseStatusCodeOperator:    {"status_code", ResponseStatusCodeOperator},
-	ResponseBytesReceivedOperator: {"bytes_received", ResponseBytesReceivedOperator},
-	ResponseBytesSentOperator:     {"bytes_sent", ResponseBytesSentOperator},
-	StatusFlagsOperator:           {"status_flags", StatusFlagsOperator},
+	ResponseStatusCodeOperator:    {"status-code", ResponseStatusCodeOperator},
+	ResponseBytesReceivedOperator: {"bytes-received", ResponseBytesReceivedOperator},
+	ResponseBytesSentOperator:     {"bytes-sent", ResponseBytesSentOperator},
+	StatusFlagsOperator:           {"status-flags", StatusFlagsOperator},
 	//UpstreamHostOperator:  {"upstream_host", UpstreamHostOperator},
 
 	// Request
@@ -41,15 +41,15 @@ var operators = map[string]*Operator{
 	RequestPathOperator:     {"path", RequestPathOperator},
 	RequestHostOperator:     {"host", RequestHostOperator},
 
-	RequestIdOperator:           {"request_id", RequestIdOperator},
-	RequestFromRouteOperator:    {"request_id", RequestIdOperator},
-	RequestUserAgentOperator:    {"user_agent", RequestUserAgentOperator},
+	RequestIdOperator:           {"request-id", RequestIdOperator},
+	RequestFromRouteOperator:    {"request-from", RequestFromRouteOperator},
+	RequestUserAgentOperator:    {"user-agent", RequestUserAgentOperator},
 	RequestAuthorityOperator:    {"authority", RequestAuthorityOperator},
 	RequestForwardedForOperator: {"forwarded", RequestForwardedForOperator},
 
 	// gRPC
-	GRPCStatusOperator:       {"grpc_status", GRPCStatusOperator},
-	GRPCStatusNumberOperator: {"grpc_number", GRPCStatusNumberOperator},
+	GRPCStatusOperator:       {"grpc-status", GRPCStatusOperator},
+	GRPCStatusNumberOperator: {"grpc-number", GRPCStatusNumberOperator},
 }
 
 func CreateOperators(operators []string) ([]Operator, error) {

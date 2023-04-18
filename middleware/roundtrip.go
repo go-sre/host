@@ -23,7 +23,7 @@ func (w *accessWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return resp, err
 	}
-	entry := accessdata.NewEgressEntry(start, time.Since(start), "", req, resp, -1, -1, -1, "", "")
+	entry := accessdata.NewEgressEntry(start, time.Since(start), req, resp, "", -1, -1, -1, "", "", "")
 	defaultLogFn(entry)
 	return resp, nil
 }

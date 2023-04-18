@@ -29,7 +29,7 @@ func (t *testStatus) Code() uint32 {
 }
 
 func init() {
-	defaultLogFn = func(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, limit rate.Limit, burst int, proxied string, statusFlags string) {
+	defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, retry, proxy, statusFlags string) {
 		_, host, path := ParseUri(req.URL.String())
 		s := fmt.Sprintf("traffic:%v ,"+
 			"route:%v ,"+
@@ -42,13 +42,14 @@ func init() {
 			"timeout:%v, "+
 			"rate-limit:%v, "+
 			"rate-burst:%v, "+
+			"retry:%v, "+
 			"proxy:%v, "+
 			"status-flags:%v",
 			traffic, routeName, req.Header.Get(RequestIdHeaderName), resp.StatusCode, req.Method, req.URL.String(), host, path,
 			timeout,
 			limit, burst,
-			//ctrlState[RetryName], ctrlState[RetryRateLimitName], ctrlState[RetryRateBurstName],
-			proxied, //ctrlState[ProxyName],
+			retry,
+			proxy,
 			statusFlags)
 		fmt.Printf("{%v}\n", s)
 	}
@@ -58,7 +59,7 @@ func ExampleEgressApply() {
 	function(context.Background())
 
 	//Output:
-	//{traffic:egress ,route:* ,request-id:123-456-7890, status-code:0, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:-1, rate-limit:-1, rate-burst:-1, proxy:, status-flags:}
+	//{traffic:egress ,route:* ,request-id:123-456-7890, status-code:0, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:-1, rate-limit:-1, rate-burst:-1, retry:, proxy:, status-flags:}
 
 }
 
@@ -77,7 +78,7 @@ func ExampleEgressApply_RateLimit() {
 
 	//Output:
 	//test: EgressTable().AddController(route) [errs:[]]
-	//{traffic:egress ,route:rate-limit-route ,request-id:123-456-7890, status-code:94, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:-1, rate-limit:1, rate-burst:0, proxy:, status-flags:RL}
+	//{traffic:egress ,route:rate-limit-route ,request-id:123-456-7890, status-code:94, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:-1, rate-limit:1, rate-burst:0, retry:, proxy:, status-flags:RL}
 
 }
 
@@ -94,8 +95,8 @@ func ExampleEgressApply_Timeout() {
 	functionTimeout(context.Background())
 
 	//Output:
-	//{traffic:egress ,route:timeout-route ,request-id:123-456-7890, status-code:4, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:1000, rate-limit:-1, rate-burst:-1, proxy:, status-flags:TO}
-
+	//{traffic:egress ,route:timeout-route ,request-id:123-456-7890, status-code:4, method:GET, url:urn:postgresql.us-test-1:query.access-log, host:postgresql.us-test-1, path:query.access-log, timeout:1000, rate-limit:-1, rate-burst:-1, retry:, proxy:, status-flags:UT}
+	
 }
 
 func function(ctx context.Context) (status *testStatus) {

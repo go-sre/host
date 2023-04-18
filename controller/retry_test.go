@@ -103,7 +103,7 @@ func ExampleRetry_IsRetryable_Disabled() {
 
 
 */
-func ExampleRetry_IsRetryable_StatusCode() {
+func ExampleRetry_IsValidStatusCode() {
 	name := "test-route"
 	config := NewRetryConfig(false, 100, 10, 0, []int{503, 504})
 	t := newTable(true, false)
@@ -113,32 +113,32 @@ func ExampleRetry_IsRetryable_StatusCode() {
 	ctrl := t.LookupByName(name)
 	ctrl.Retry().Enable()
 	ctrl = t.LookupByName(name)
-	ok, status := ctrl.Retry().IsRetryable(200)
-	fmt.Printf("test: IsRetryable(200) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok := ctrl.Retry().IsValidStatusCode(200)
+	fmt.Printf("test: IsValidStatusCode(200) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(200))
 
-	ok, status = ctrl.Retry().IsRetryable(500)
-	fmt.Printf("test: IsRetryable(500) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok = ctrl.Retry().IsRetryable(500)
+	fmt.Printf("test: IsValidStatusCode(500) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(500))
 
-	ok, status = ctrl.Retry().IsRetryable(502)
-	fmt.Printf("test: IsRetryable(502) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok = ctrl.Retry().IsValidStatusCode(502)
+	fmt.Printf("test: IsValidStatusCode(502) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(502))
 
-	ok, status = ctrl.Retry().IsRetryable(503)
-	fmt.Printf("test: IsRetryable(503) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok = ctrl.Retry().IsValidStatusCode(503)
+	fmt.Printf("test: IsValidStatusCode(503) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(503))
 
-	ok, status = ctrl.Retry().IsRetryable(504)
-	fmt.Printf("test: IsRetryable(504) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok = ctrl.Retry().IsValidStatusCode(504)
+	fmt.Printf("test: IsValidStatusCode(504) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(504))
 
-	ok, status = ctrl.Retry().IsRetryable(505)
-	fmt.Printf("test: IsRetryable(505) -> [ok:%v] [status:%v]\n", ok, status)
+	//ok = ctrl.Retry().IsValidStatusCode(505)
+	fmt.Printf("test: IsValidStatusCode(505) -> [ok:%v]\n", ctrl.Retry().IsValidStatusCode(505))
 
 	//Output:
 	//test: Add() -> [[]] [count:1]
-	//test: IsRetryable(200) -> [ok:false] [status:]
-	//test: IsRetryable(500) -> [ok:false] [status:]
-	//test: IsRetryable(502) -> [ok:false] [status:]
-	//test: IsRetryable(503) -> [ok:true] [status:]
-	//test: IsRetryable(504) -> [ok:true] [status:]
-	//test: IsRetryable(505) -> [ok:false] [status:]
+	//test: IsValidStatusCode(200) -> [ok:false]
+	//test: IsValidStatusCode(500) -> [ok:false]
+	//test: IsValidStatusCode(502) -> [ok:false]
+	//test: IsValidStatusCode(503) -> [ok:true]
+	//test: IsValidStatusCode(504) -> [ok:true]
+	//test: IsValidStatusCode(505) -> [ok:false]
 
 }
 

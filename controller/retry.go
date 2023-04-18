@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"golang.org/x/time/rate"
 	"math/rand"
-	"net/http"
 	"net/url"
 	"time"
 )
@@ -17,6 +16,7 @@ import (
 type Retry interface {
 	State
 	Actuator
+	IsValidStatusCode(statusCode int) bool
 	IsRetryable(statusCode int) (ok bool, status string)
 	Limit() rate.Limit
 	Burst() int
@@ -166,10 +166,16 @@ func (r *retry) Signal(values url.Values) error {
 	return nil
 }
 
-func (r *retry) IsRetryable(statusCode int) (bool, string) {
-	if statusCode < http.StatusInternalServerError {
-		return false, ""
+func (r *retry) IsValidStatusCode(statusCode int) bool {
+	for _, code := range r.config.StatusCodes {
+		if code == statusCode {
+			return true
+		}
 	}
+	return false
+}
+
+func (r *retry) IsRetryable(statusCode int) (bool, string) {
 	if !r.rateLimiter.Allow() {
 		return false, RateLimitFlag
 	}

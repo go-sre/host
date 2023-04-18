@@ -14,7 +14,7 @@ type HttpMatcher func(req *http.Request) (routeName string, ok bool)
 type UriMatcher func(uri string, method string) (routeName string, ok bool)
 
 // OutputHandler - type for output handling
-type OutputHandler func(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string)
+type OutputHandler func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string)
 
 // SetLogFn - configuration for logging function
 func SetLogFn(fn OutputHandler) {
@@ -23,8 +23,8 @@ func SetLogFn(fn OutputHandler) {
 	}
 }
 
-var defaultLogFn = func(traffic string, start time.Time, duration time.Duration, routeName string, req *http.Request, resp *http.Response, timeout int, rateLimit rate.Limit, rateBurst int, proxied string, statusFlags string) {
-	s := FmtLog(traffic, start, duration, routeName, req, resp, timeout, rateLimit, rateBurst, proxied, statusFlags)
+var defaultLogFn = func(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) {
+	s := FmtLog(traffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, retry, proxy, statusFlags)
 	fmt.Printf("{%v}\n", s)
 }
 
