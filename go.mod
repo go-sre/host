@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/felixge/httpsnoop v1.0.3
-	github.com/go-sre/core v0.0.0-20230403183745-a454c738cec2
+	github.com/go-sre/core v0.0.0-20230414125950-256e7ff082d1
 	github.com/google/uuid v1.3.0
 	golang.org/x/time v0.3.0
 	google.golang.org/grpc v1.54.0
