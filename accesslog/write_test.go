@@ -102,21 +102,23 @@ func ExampleLog_RateLimiter_500() {
 
 }
 
-func ExampleLog_Retry() {
+func ExampleLog_Retry_Proxy() {
 	start := time.Now()
 
 	err := InitEgressOperators([]accessdata.Operator{{Value: accessdata.StartTimeOperator}, {Value: accessdata.DurationOperator, Name: "duration_ms"},
-		{Value: accessdata.TrafficOperator}, {Value: accessdata.RouteNameOperator}, {Value: accessdata.RetryOperator},
-		{Value: accessdata.RateLimitOperator}, {Value: accessdata.RateBurstOperator}})
+		{Value: accessdata.TrafficOperator}, {Value: accessdata.RouteNameOperator}, {Value: accessdata.RateLimitOperator},
+		{Value: accessdata.RateBurstOperator}, {Value: accessdata.RetryOperator}, {Value: accessdata.ProxyOperator}})
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}
 	var start1 time.Time
-	Write[TestOutputHandler, accessdata.JsonFormatter](accessdata.NewEgressEntry(start1, time.Since(start), nil, nil, "handler-route", -1, 123, 67, "true", "", ""))
+	Write[TestOutputHandler, accessdata.JsonFormatter](accessdata.NewEgressEntry(start1, time.Since(start), nil, nil, "handler-route", -1, 123, 67, "", "", ""))
+	Write[TestOutputHandler, accessdata.JsonFormatter](accessdata.NewEgressEntry(start1, time.Since(start), nil, nil, "handler-route", -1, 123, 67, "true", "false", ""))
 
 	//Output:
-	//test: Write() -> [{"start-time":"0001-01-01 00:00:00.000000","duration_ms":0,"traffic":"egress","route-name":"handler-route","retry":"true","rate-limit":123,"rate-burst":67}]
+	//test: Write() -> [{"start-time":"0001-01-01 00:00:00.000000","duration_ms":0,"traffic":"egress","route-name":"handler-route","rate-limit":123,"rate-burst":67,"retry":null,"proxy":null}]
+	//test: Write() -> [{"start-time":"0001-01-01 00:00:00.000000","duration_ms":0,"traffic":"egress","route-name":"handler-route","rate-limit":123,"rate-burst":67,"retry":true,"proxy":false}]
 
 }
 

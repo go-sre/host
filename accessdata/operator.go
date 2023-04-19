@@ -93,7 +93,7 @@ func requestOperatorHeaderName(value string) string {
 func IsStringValue(op Operator) bool {
 	switch op.Value {
 	case DurationOperator, TimeoutDurationOperator, RateBurstOperator,
-		RateLimitOperator, //RetryOperator, RetryRateLimitOperator, RetryRateBurstOperator,
+		RateLimitOperator, RetryOperator, ProxyOperator, //RetryRateLimitOperator, RetryRateBurstOperator,
 		ResponseStatusCodeOperator, ResponseBytesSentOperator, ResponseBytesReceivedOperator:
 		return false
 	}
