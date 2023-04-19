@@ -115,13 +115,13 @@ func Example_IsStringValue() {
 	op = Operator{Name: "test", Value: RateBurstOperator}
 	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
 
-	op = Operator{Name: "test", Value: RetryOperator}
+	op = Operator{Name: "test", Value: ResponseStatusCodeOperator}
 	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
 
-	op = Operator{Name: "test", Value: RetryRateLimitOperator}
+	op = Operator{Name: "test", Value: ResponseBytesSentOperator}
 	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
 
-	op = Operator{Name: "test", Value: RetryRateBurstOperator}
+	op = Operator{Name: "test", Value: ResponseBytesReceivedOperator}
 	fmt.Printf("test: IsStringValue() -> %v [value:%v]\n", IsStringValue(op), op.Value)
 
 	//Output:
@@ -131,8 +131,8 @@ func Example_IsStringValue() {
 	//test: IsStringValue() -> false [value:%TIMEOUT_DURATION%]
 	//test: IsStringValue() -> false [value:%RATE_LIMIT%]
 	//test: IsStringValue() -> false [value:%RATE_BURST%]
-	//test: IsStringValue() -> false [value:%RETRY]
-	//test: IsStringValue() -> false [value:%RETRY_RATE_LIMIT%]
-	//test: IsStringValue() -> false [value:%RETRY_RATE_BURST%]
+	//test: IsStringValue() -> false [value:%STATUS_CODE%]
+	//test: IsStringValue() -> false [value:%BYTES_SENT%]
+	//test: IsStringValue() -> false [value:%BYTES_RECEIVED%]
 
 }

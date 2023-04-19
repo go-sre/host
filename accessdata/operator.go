@@ -28,10 +28,10 @@ const (
 	TimeoutDurationOperator = "%TIMEOUT_DURATION%"
 	RateLimitOperator       = "%RATE_LIMIT%"
 	RateBurstOperator       = "%RATE_BURST%"
-	RetryOperator           = "%RETRY"
-	RetryRateLimitOperator  = "%RETRY_RATE_LIMIT%"
-	RetryRateBurstOperator  = "%RETRY_RATE_BURST%"
-	ProxyOperator           = "%PROXY%"
+	RetryOperator           = "%RETRY%"
+	//RetryRateLimitOperator  = "%RETRY_RATE_LIMIT%"
+	//RetryRateBurstOperator  = "%RETRY_RATE_BURST%"
+	ProxyOperator = "%PROXY%"
 
 	ResponseStatusCodeOperator    = "%STATUS_CODE%"    // HTTP status code
 	ResponseBytesReceivedOperator = "%BYTES_RECEIVED%" // bytes received
@@ -93,7 +93,7 @@ func requestOperatorHeaderName(value string) string {
 func IsStringValue(op Operator) bool {
 	switch op.Value {
 	case DurationOperator, TimeoutDurationOperator, RateBurstOperator,
-		RateLimitOperator, RetryOperator, RetryRateLimitOperator, RetryRateBurstOperator,
+		RateLimitOperator, //RetryOperator, RetryRateLimitOperator, RetryRateBurstOperator,
 		ResponseStatusCodeOperator, ResponseBytesSentOperator, ResponseBytesReceivedOperator:
 		return false
 	}
