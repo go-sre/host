@@ -28,7 +28,7 @@ var defaultLogFn = func(traffic string, start time.Time, duration time.Duration,
 	fmt.Printf("{%v}\n", s)
 }
 
-// SetExtractFn - configuration for extract function
+// SetExtractFn - configuration for connector function
 func SetExtractFn(fn OutputHandler) {
 	if fn != nil {
 		defaultExtractFn = fn

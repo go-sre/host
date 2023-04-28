@@ -1,4 +1,4 @@
-package extract
+package connector
 
 import (
 	"errors"
@@ -90,7 +90,7 @@ func do(entry *accessdata.Entry) bool {
 		errorHandler(nil, locDo, errors.New("invalid argument: access log data is nil"))
 		return false
 	}
-	// let's not extract the extract, the extract, the extract ...
+	// let's not extract the extractor, the extractor, the extractor ...
 	if entry.Url == url {
 		return false
 	}

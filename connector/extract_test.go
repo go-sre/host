@@ -1,4 +1,4 @@
-package extract
+package connector
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 /*
 func setTestErrorHandler() {
 	opt.handler = func(err error) {
-		fmt.Printf("test: extract(logd) -> [err:%v]\n", err)
+		fmt.Printf("test: connector(logd) -> [err:%v]\n", err)
 	}
 }
 
@@ -25,7 +25,7 @@ func Example_Initialize_Url() {
 	fmt.Printf("test: Initialize(\"\") -> [%v] [url:%v]\n", status, url)
 
 	//Output:
-	//[[] github.com/go-sre/host/extract/initialize [invalid argument: uri is empty]]
+	//[[] github.com/go-sre/host/connector/initialize [invalid argument: uri is empty]]
 	//test: Initialize("") -> [Internal] [url:]
 	//test: Initialize("") -> [OK] [url:test]
 
@@ -44,7 +44,7 @@ func Example_Handler_NotProcessed() {
 	fmt.Printf("test: handler(data) -> [%v]\n", status)
 
 	//Output:
-	//[[] github.com/go-sre/host/extract/do [invalid argument: access log data is nil]]
+	//[[] github.com/go-sre/host/connector/do [invalid argument: access log data is nil]]
 	//test: handler(nil) -> [false]
 	//test: handler(data) -> [false]
 
@@ -60,9 +60,9 @@ func Example_Handler_ConnectFailure() {
 	fmt.Printf("test: handler(data) -> [%v]\n", status)
 
 	//Output:
-	//[[] github.com/go-sre/host/extract/do [Put "http://localhost:8080/accesslog": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it.]]
+	//[[] github.com/go-sre/host/connector/do [Put "http://localhost:8080/accesslog": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it.]]
 	//test: handler(data) -> [false]
-	
+
 }
 
 func Example_Handler_Processed() {
