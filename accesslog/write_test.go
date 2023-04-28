@@ -20,30 +20,32 @@ func ExampleLog_Error() {
 
 }
 
-/*
 func ExampleLog_Origin() {
 	name := "ingress-origin-route"
 	start := time.Now()
 
-	data.SetOrigin(data.Origin{Region: "us-west", Zone: "dfw", Service: "test-service", InstanceId: "123456-7890-1234"})
-	err := InitIngressOperators([]data.Operator{{Value: data.StartTimeOperator}, {Value: data.DurationOperator, Name: "duration_ms"},
-		{Value: data.TrafficOperator}, {Value: data.RouteNameOperator}, {Value: data.OriginRegionOperator}, {Value: data.OriginZoneOperator}, {Value: data.OriginServiceOperator}, {Value: data.OriginInstanceIdOperator},
+	accessdata.SetOrigin("us-west", "dfw", "cluster-1", "test-service", "123456-7890-1234")
+	err := InitIngressOperators([]accessdata.Operator{{Value: accessdata.StartTimeOperator}, {Value: accessdata.DurationOperator, Name: "duration_ms"},
+		{Value: accessdata.TrafficOperator}, {Value: accessdata.RouteNameOperator}, {Value: accessdata.OriginRegionOperator},
+		{Value: accessdata.OriginZoneOperator}, {Value: accessdata.OriginSubZoneOperator}, {Value: accessdata.OriginServiceOperator},
+		{Value: accessdata.OriginInstanceIdOperator},
 	})
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}
 	var start1 time.Time
-	entry := data.NewHttpIngressEntry(start1, time.Since(start), nil, nil, "", map[string]string{data.ActName: name})
-	Write[TestOutputHandler, data.JsonFormatter](entry)
-	Write[TestOutputHandler, data.TextFormatter](entry)
+	entry := accessdata.NewIngressEntry(start1, time.Since(start), nil, nil, name, 500, 100, 10, "false", "false", "")
+	Write[TestOutputHandler, accessdata.JsonFormatter](entry)
+	Write[TestOutputHandler, accessdata.TextFormatter](entry)
 
 	//Output:
-	//test: Write() -> [{"start_time":"0001-01-01 00:00:00.000000","duration_ms":0,"traffic":"ingress","route_name":"ingress-origin-route","region":"us-west","zone":"dfw","service":"test-service","instance_id":"123456-7890-1234"}]
-	//test: Write() -> [0001-01-01 00:00:00.000000,0,ingress,ingress-origin-route,us-west,dfw,test-service,123456-7890-1234]
+	//test: Write() -> [{"start-time":"0001-01-01 00:00:00.000000","duration_ms":0,"traffic":"ingress","route-name":"ingress-origin-route","region":"us-west","zone":"dfw","sub-zone":"cluster-1","service":"test-service","instance-id":"123456-7890-1234"}]
+	//test: Write() -> [0001-01-01 00:00:00.000000,0,ingress,ingress-origin-route,us-west,dfw,cluster-1,test-service,123456-7890-1234]
 
 }
 
+/*
 func ExampleLog_Ping() {
 	name := "ingress-ping-route"
 	url := "https://www.google.com/search"

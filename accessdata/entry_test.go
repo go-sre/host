@@ -21,6 +21,25 @@ func _Example_Value_Duration() {
 
 }
 
+func Example_Value_Origin() {
+	SetOrigin("region", "zone", "subZone", "service", "instanceId")
+
+	data := Entry{}
+	fmt.Printf("test: Value(\"%v\") -> [%v]\n", "region", data.Value(OriginRegionOperator))
+	fmt.Printf("test: Value(\"%v\") -> [%v]\n", "zone", data.Value(OriginZoneOperator))
+	fmt.Printf("test: Value(\"%v\") -> [%v]\n", "sub-zone", data.Value(OriginSubZoneOperator))
+	fmt.Printf("test: Value(\"%v\") -> [%v]\n", "service", data.Value(OriginServiceOperator))
+	fmt.Printf("test: Value(\"%v\") -> [%v]\n", "instance-id", data.Value(OriginInstanceIdOperator))
+
+	//Output:
+	//test: Value("region") -> [region]
+	//test: Value("zone") -> [zone]
+	//test: Value("sub-zone") -> [subZone]
+	//test: Value("service") -> [service]
+	//test: Value("instance-id") -> [instanceId]
+
+}
+
 func Example_Value_Controller() {
 	name := "test-route"
 	op := RouteNameOperator

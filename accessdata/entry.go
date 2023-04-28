@@ -19,6 +19,15 @@ const (
 // Accessor - function type
 type Accessor func(entry *Entry)
 
+// Origin - struct for origin information
+type Origin struct {
+	Region     string
+	Zone       string
+	SubZone    string
+	Service    string
+	InstanceId string
+}
+
 // Entry - struct for all access logging accessdata
 type Entry struct {
 	Traffic   string
@@ -154,8 +163,16 @@ func (l *Entry) Value(value string) string {
 		return l.Duration.String()
 
 		// Origin
-	case OriginRegionOperator, OriginZoneOperator, OriginSubZoneOperator, OriginServiceOperator, OriginInstanceIdOperator:
-		return originValue(value)
+	case OriginRegionOperator:
+		return origin.Region
+	case OriginZoneOperator:
+		return origin.Zone
+	case OriginSubZoneOperator:
+		return origin.SubZone
+	case OriginServiceOperator:
+		return origin.Service
+	case OriginInstanceIdOperator:
+		return origin.InstanceId
 
 		// Request
 	case RequestMethodOperator:
