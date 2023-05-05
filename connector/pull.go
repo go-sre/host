@@ -17,7 +17,7 @@ var (
 	pullUrl          string
 	pullClient       = http.DefaultClient
 	done             chan bool
-	request *http.Request
+	request          *http.Request
 )
 
 func InitializePull[E runtime.ErrorHandler](uri string, newClient *http.Client) *runtime.Status {
@@ -31,18 +31,17 @@ func InitializePull[E runtime.ErrorHandler](uri string, newClient *http.Client) 
 	}
 	pullUrl = u.String()
 	var err error
-	request,err = http.NewRequest("GET",pullUrl,nil)
+	request, err = http.NewRequest("GET", pullUrl, nil)
 	if err != nil {
-		return pullErrorHandler(nil, pullLocInit, errors.New(fmt.Sprintf("invalid argument: upstream request error [%v]",err)))
+		return pullErrorHandler(nil, pullLocInit, errors.New(fmt.Sprintf("invalid argument: upstream request error [%v]", err)))
 	}
 	if newClient != nil {
 		pullClient = newClient
 	}
 	done = make(chan bool)
-    pull(time.Second)
+	pull(time.Second)
 	return runtime.NewStatusOK()
 }
-
 
 func pull(d time.Duration) {
 	tick := time.Tick(d)
@@ -56,13 +55,14 @@ func pull(d time.Duration) {
 			if err != nil {
 				pullErrorHandler(nil, pullLocPull, err)
 			} else {
-				buf, err0 := exchange.ReadAll(resp.Body) //fmt.Println("Current time: ", t)
+				_, err0 := exchange.ReadAll(resp.Body) //fmt.Println("Current time: ", t)
 				if err0 != nil {
 					pullErrorHandler(nil, pullLocPull, err0)
 				}
 			}
 		default:
+		}
 	}
 }
 
-func
+

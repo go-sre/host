@@ -79,7 +79,7 @@ func Example_Handler_Processed() {
 	req.Header.Set("X-Request-ID", "1234-56-7890")
 	resp := &http.Response{StatusCode: 200, Proto: "HTTP/1.1", ProtoMajor: 1, ProtoMinor: 1, Header: http.Header{}, Body: nil, ContentLength: 0, TransferEncoding: nil, Close: false, Uncompressed: false, Trailer: http.Header{}, Request: req, TLS: nil}
 
-	extract("egress", time.Now(), time.Millisecond*450, req, resp, "test-route", -1, 50, 5, "false", "true", "RL")
+	extract("egress", time.Now(), time.Millisecond*450, req, resp, "test-route", -1, 50, 5, "95/500ms", "false", "true", "35", "RL")
 	time.Sleep(time.Second * 2)
 	ShutdownPush()
 

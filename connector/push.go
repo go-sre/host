@@ -47,8 +47,10 @@ var (
 		{Name: "timeout-ms", Value: accessdata.TimeoutDurationOperator},
 		{Name: "rate-limit", Value: accessdata.RateLimitOperator},
 		{Name: "rate-burst", Value: accessdata.RateBurstOperator},
+		{Name: "rate-threshold", Value: accessdata.RateThresholdOperator},
 		{Name: "retry", Value: accessdata.RetryOperator},
 		{Name: "proxy", Value: accessdata.ProxyOperator},
+		{Name: "proxy-threshold", Value: accessdata.ProxyThresholdOperator},
 		{Name: "status-flags", Value: accessdata.StatusFlagsOperator},
 	}
 )
@@ -78,8 +80,8 @@ func ShutdownPush() {
 	}
 }
 
-func extract(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, retry, proxy, statusFlags string) {
-	pushC <- accessdata.NewEntry(traffic, start, duration, req, resp, routeName, timeout, limit, burst, retry, proxy, statusFlags)
+func extract(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, rateThreshold, retry, proxy, proxyThreshold, statusFlags string) {
+	pushC <- accessdata.NewEntry(traffic, start, duration, req, resp, routeName, timeout, limit, burst, rateThreshold, retry, proxy, proxyThreshold, statusFlags)
 }
 
 func pushDo(entry *accessdata.Entry) bool {
