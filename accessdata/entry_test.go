@@ -51,7 +51,7 @@ func Example_Value_Controller() {
 	data = Entry{RouteName: name}
 	fmt.Printf("test: Value(\"%v\") -> [route_name:%v]\n", name, data.Value(op))
 
-	data1 := NewEntry(PingTraffic, start, time.Since(start), nil, nil, name, -1, -1, -1, "", "", "")
+	data1 := NewEntry(PingTraffic, start, time.Since(start), nil, nil, name, -1, -1, -1, "95/500s", "", "", "", "")
 	fmt.Printf("test: Value(\"%v\") -> [traffic:%v]\n", name, data1.Value(TrafficOperator))
 
 	data = Entry{Timeout: 500}
@@ -125,7 +125,7 @@ func Example_EgressEntry() {
 	resp := new(http.Response)
 	resp.StatusCode = 201
 
-	e := NewEgressEntry(start, 0, req, resp, "egress-route", -1, -1, -1, "", "", "RL")
+	e := NewEgressEntry(start, 0, req, resp, "egress-route", -1, -1, -1, "", "", "", "", "RL")
 	fmt.Printf("test: String() -> {%v}\n", e)
 
 	//Output:

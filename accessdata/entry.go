@@ -49,19 +49,21 @@ type Entry struct {
 	BytesReceived int64
 
 	// State and
-	Timeout     int
-	RateLimit   rate.Limit
-	RateBurst   int
-	Retry       string
-	Proxy       string
-	StatusFlags string
+	Timeout        int
+	RateLimit      rate.Limit
+	RateBurst      int
+	RateThreshold  string
+	Retry          string
+	Proxy          string
+	ProxyThreshold string
+	StatusFlags    string
 }
 
 func NewEmptyEntry() *Entry {
 	return new(Entry)
 }
 
-func NewEntry(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
+func NewEntry(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, rateThreshold, retry, proxy, proxyThreshold, statusFlags string) *Entry {
 	e := new(Entry)
 	e.Traffic = traffic
 	e.Start = start
@@ -81,13 +83,13 @@ func NewEntry(traffic string, start time.Time, duration time.Duration, req *http
 }
 
 // NewEgressEntry - create an Entry for egress traffic
-func NewEgressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
-	return NewEntry(EgressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, retry, proxy, statusFlags)
+func NewEgressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, rateThreshold, retry, proxy, proxyThreshold, statusFlags string) *Entry {
+	return NewEntry(EgressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, rateThreshold, retry, proxy, proxyThreshold, statusFlags)
 }
 
 // NewIngressEntry - create an Entry for ingress traffic
-func NewIngressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, retry, proxy, statusFlags string) *Entry {
-	return NewEntry(IngressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, retry, proxy, statusFlags)
+func NewIngressEntry(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, rateLimit rate.Limit, rateBurst int, rateThreshold, retry, proxy, proxyThreshold, statusFlags string) *Entry {
+	return NewEntry(IngressTraffic, start, duration, req, resp, routeName, timeout, rateLimit, rateBurst, rateThreshold, retry, proxy, proxyThreshold, statusFlags)
 }
 
 func (l *Entry) AddResponse(resp *http.Response) {
@@ -215,8 +217,12 @@ func (l *Entry) Value(value string) string {
 		return fmt.Sprintf("%v", l.RateLimit)
 	case RateBurstOperator:
 		return strconv.Itoa(l.RateBurst)
+	case RateThresholdOperator:
+		return l.RateThreshold
 	case ProxyOperator:
 		return l.Proxy
+	case ProxyThresholdOperator:
+		return l.ProxyThreshold
 	case RetryOperator:
 		return l.Retry
 		//case RetryRateLimitOperator:

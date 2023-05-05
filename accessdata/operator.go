@@ -28,10 +28,10 @@ const (
 	TimeoutDurationOperator = "%TIMEOUT_DURATION%"
 	RateLimitOperator       = "%RATE_LIMIT%"
 	RateBurstOperator       = "%RATE_BURST%"
+	RateThresholdOperator   = "%RATE_THRESHOLD%"
 	RetryOperator           = "%RETRY%"
-	//RetryRateLimitOperator  = "%RETRY_RATE_LIMIT%"
-	//RetryRateBurstOperator  = "%RETRY_RATE_BURST%"
-	ProxyOperator = "%PROXY%"
+	ProxyOperator           = "%PROXY%"
+	ProxyThresholdOperator  = "%PROXY_THRESHOLD%"
 
 	ResponseStatusCodeOperator    = "%STATUS_CODE%"    // HTTP status code
 	ResponseBytesReceivedOperator = "%BYTES_RECEIVED%" // bytes received

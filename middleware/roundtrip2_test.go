@@ -61,7 +61,7 @@ func rateLimiterSetValues(limit rate.Limit, burst int) url.Values {
 	return v
 }
 
-func testHttpLog(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, retry, proxy, statusFlags string) {
+func testHttpLog(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, rateThreshold, retry, proxy, proxyThreshold, statusFlags string) {
 	s := fmt.Sprintf("\"traffic\":\"%v\","+
 		"\"route-name\":\"%v\","+
 		"\"method\":\"%v\","+
@@ -75,12 +75,14 @@ func testHttpLog(traffic string, start time.Time, duration time.Duration, req *h
 		"\"timeout-ms\":%v,"+
 		"\"rate-limit\":%v,"+
 		"\"rate-burst\":%v,"+
+		"\"rate-threshold\":%v,"+
 		"\"retry\":%v,"+
-		"\"proxy\":%v",
+		"\"proxy\":%v, "+
+		"\"proxy-threshold\":%v",
 		traffic, routeName, req.Method, req.Host, req.URL.Path, req.Proto, resp.StatusCode, statusFlags,
 		timeout,
-		limit, burst,
-		retry, proxy)
+		limit, burst, rateThreshold,
+		retry, proxy, proxyThreshold)
 	fmt.Printf("test: Write() -> [{%v}]\n", s)
 }
 
@@ -105,9 +107,9 @@ func init() {
 	})
 
 	controller.EgressTable().AddController(controller.NewRoute(timeoutRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(true, 504, time.Millisecond)))
-	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(true, 503, 2000, 10)))
+	controller.EgressTable().AddController(controller.NewRoute(rateLimitRoute, controller.EgressTraffic, "", false, controller.NewRateLimiterConfig(true, 503, 2000, 10, "95/500ms")))
 	controller.EgressTable().AddController(controller.NewRoute(retryRoute, controller.EgressTraffic, "", false, controller.NewTimeoutConfig(true, 504, time.Millisecond), controller.NewRetryConfig(true, 0, 0, 0, []int{503, 504})))
-	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl, nil, nil)))
+	controller.EgressTable().AddController(controller.NewRoute(proxyRoute, controller.EgressTraffic, "", false, controller.NewProxyConfig(true, googleUrl, nil, nil, "10")))
 
 	controller.SetLogFn(testHttpLog)
 
@@ -151,7 +153,7 @@ func Example_Controller_Default() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"*","method":"GET","host":"www.google.com","path":"","protocol":"HTTP/1.1","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"retry":,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"*","method":"GET","host":"www.google.com","path":"","protocol":"HTTP/1.1","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:200] [err:<nil>]
 
 }
@@ -167,7 +169,7 @@ func Example_Controller_Default_Timeout() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"timeout-route","method":"GET","host":"www.google.com","path":"/search","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"retry":,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"timeout-route","method":"GET","host":"www.google.com","path":"/search","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:504] [err:<nil>]
 
 }
@@ -183,8 +185,8 @@ func Example_Controller_Default_RateLimit() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"rate-limit-route","method":"GET","host":"www.twitter.com","path":"","protocol":"HTTP/1.1","status-code":301,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":2000,"rate-burst":10,"retry":,"proxy":}]
-	//test: Write() -> [{"traffic":"egress","route-name":"*","method":"GET","host":"","path":"/","protocol":"","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"retry":,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"rate-limit-route","method":"GET","host":"www.twitter.com","path":"","protocol":"HTTP/1.1","status-code":301,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":2000,"rate-burst":10,"rate-threshold":95/500ms,"retry":,"proxy":, "proxy-threshold":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"*","method":"GET","host":"","path":"/","protocol":"","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:200] [err:<nil>]
 
 }
@@ -207,7 +209,7 @@ func Example_Controller_Default_Retry_NotEnabled() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"retry":,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:504] [err:<nil>]
 
 }
@@ -230,7 +232,7 @@ func Example_Controller_Default_Retry_RateLimited() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"RT-RL","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":0,"rate-burst":0,"retry":false,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"RT-RL","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":0,"rate-burst":0,"rate-threshold":,"retry":false,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:504] [err:<nil>]
 
 }
@@ -258,8 +260,8 @@ func Example_Controller_Default_Retry() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"retry":false,"proxy":}]
-	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":100,"rate-burst":10,"retry":true,"proxy":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":false,"proxy":, "proxy-threshold":}]
+	//test: Write() -> [{"traffic":"egress","route-name":"retry-route","method":"GET","host":"www.facebook.com","path":"","protocol":"HTTP/1.1","status-code":504,"status-flags":"UT","bytes-received":-1,"bytes-sent":0,"timeout-ms":1,"rate-limit":100,"rate-burst":10,"rate-threshold":,"retry":true,"proxy":, "proxy-threshold":}]
 	//test: RoundTrip(handler:true) -> [status_code:504] [err:<nil>]
 
 }
@@ -275,7 +277,7 @@ func Example_Controller_Proxy() {
 	fmt.Printf("test: RoundTrip(handler:true) -> [status_code:%v] [err:%v]\n", resp.StatusCode, err)
 
 	//Output:
-	//test: Write() -> [{"traffic":"egress","route-name":"proxy-route","method":"GET","host":"www.google.com","path":"/search","protocol":"HTTP/1.1","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"retry":,"proxy":true}]
+	//test: Write() -> [{"traffic":"egress","route-name":"proxy-route","method":"GET","host":"www.google.com","path":"/search","protocol":"HTTP/1.1","status-code":200,"status-flags":"","bytes-received":-1,"bytes-sent":0,"timeout-ms":-1,"rate-limit":-1,"rate-burst":-1,"rate-threshold":,"retry":,"proxy":true, "proxy-threshold":10}]
 	//test: RoundTrip(handler:true) -> [status_code:200] [err:<nil>]
 	
 }

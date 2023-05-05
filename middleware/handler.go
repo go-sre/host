@@ -17,7 +17,7 @@ func AccessHttpHostMetricsHandler(appHandler http.Handler, msg string) http.Hand
 		resp := new(http.Response)
 		resp.StatusCode = m.Code
 		resp.ContentLength = m.Written
-		entry := accessdata.NewIngressEntry(start, time.Since(start), req, resp, "", -1, -1, -1, "", "", "")
+		entry := accessdata.NewIngressEntry(start, time.Since(start), req, resp, "", -1, -1, -1, "", "", "", "", "")
 		defaultLogFn(entry)
 	})
 	return wrappedH
