@@ -20,10 +20,10 @@ func rateLimiterSetValues(limit rate.Limit,
 }
 
 func Example_newRateLimiter() {
-	t := newRateLimiter("test-route", newTable(true, false), NewRateLimiterConfig(true, 503, 1, 100))
+	t := newRateLimiter("test-route", newTable(true, false), NewRateLimiterConfig(true, 503, 1, 100, ""))
 	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [statusCode:%v]\n", t.name, t.config.Limit, t.config.Burst, t.StatusCode())
 
-	t = newRateLimiter("test-route2", newTable(true, false), NewRateLimiterConfig(true, 429, rate.Inf, DefaultBurst))
+	t = newRateLimiter("test-route2", newTable(true, false), NewRateLimiterConfig(true, 429, rate.Inf, DefaultBurst, ""))
 	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [statusCode:%v]\n", t.name, t.config.Limit, t.config.Burst, t.StatusCode())
 
 	t2 := cloneRateLimiter(t)
@@ -39,28 +39,27 @@ func Example_newRateLimiter() {
 
 func ExampleRateLimiter_State() {
 	tbl := newTable(true, false)
-	t := newRateLimiter("test-route", tbl, NewRateLimiterConfig(true, 503, 1, 100))
-	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [statusCode:%v]\n", t.name, t.config.Limit, t.config.Burst, t.StatusCode())
+	t := newRateLimiter("test-route", tbl, NewRateLimiterConfig(true, 503, 1, 100, "95/200s"))
+	fmt.Printf("test: newRateLimiter() -> [name:%v] [limit:%v] [burst:%v] [threshold:%v] [statusCode:%v]\n", t.name, t.config.Limit, t.config.Burst, t.config.Threshold, t.StatusCode())
 
-	//m := make(map[string]string, 16)
-	limit, burst := rateLimiterState(t)
-	fmt.Printf("test: rateLimiterState(t) -> [enabled:%v] [limit:%v] [burst:%v]\n", t.IsEnabled(), limit, burst)
+	limit, burst, threshold := rateLimiterState(t)
+	fmt.Printf("test: rateLimiterState(t) -> [enabled:%v] [limit:%v] [burst:%v] [threshold:%v]\n", t.IsEnabled(), limit, burst, threshold)
 
 	t.config.Enabled = false
-	//m = make(map[string]string, 16)
-	limit, burst = rateLimiterState(t)
-	fmt.Printf("test: rateLimiterState(t) -> [enabled:%v] [limit:%v] [burst:%v]\n", t.IsEnabled(), limit, burst)
+
+	limit, burst, threshold = rateLimiterState(t)
+	fmt.Printf("test: rateLimiterState(t) -> [enabled:%v] [limit:%v] [burst:%v] [threshold:%v]\n", t.IsEnabled(), limit, burst, threshold)
 
 	//Output:
-	//test: newRateLimiter() -> [name:test-route] [limit:1] [burst:100] [statusCode:503]
-	//test: rateLimiterState(t) -> [enabled:true] [limit:1] [burst:100]
-	//test: rateLimiterState(t) -> [enabled:false] [limit:-1] [burst:-1]
+	//test: newRateLimiter() -> [name:test-route] [limit:1] [burst:100] [threshold:95/200s] [statusCode:503]
+	//test: rateLimiterState(t) -> [enabled:true] [limit:1] [burst:100] [threshold:95/200s]
+	//test: rateLimiterState(t) -> [enabled:false] [limit:-1] [burst:-1] [threshold:]
 
 }
 
 func ExampleRateLimiter_Toggle() {
 	name := "test-route"
-	config := NewRateLimiterConfig(true, 503, 100, 10)
+	config := NewRateLimiterConfig(true, 503, 100, 10, "")
 	t := newTable(true, false)
 	err := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", err, t.count())
@@ -88,13 +87,13 @@ func ExampleRateLimiter_Toggle() {
 
 func _ExampleRateLimiter_Signal() {
 	name := "test-route"
-	config := NewRateLimiterConfig(true, 503, 100, 10)
+	config := NewRateLimiterConfig(true, 503, 100, 10, "")
 	t := newTable(true, false)
 	errs := t.AddController(newRoute(name, config))
 	fmt.Printf("test: Add() -> [%v] [count:%v]\n", errs, t.count())
 
 	ctrl := t.LookupByName(name)
-	limit, burst := rateLimiterState(ctrl.t().rateLimiter)
+	limit, burst, _ := rateLimiterState(ctrl.t().rateLimiter)
 	fmt.Printf("test: rateLimiterState(map,t) -> [limit:%v] [burst:%v]\n", limit, burst)
 
 	err := ctrl.RateLimiter().Signal(nil)
@@ -102,37 +101,37 @@ func _ExampleRateLimiter_Signal() {
 
 	err = ctrl.RateLimiter().Signal(rateLimiterSetValues(100, 0))
 	ctrl1 := t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl1.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl1.t().rateLimiter)
 	fmt.Printf("test: Signal(100,0) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl1.RateLimiter().Signal(rateLimiterSetValues(-1, 10))
 	ctrl = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl.t().rateLimiter)
 	fmt.Printf("test: Signal(-1,10) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl.RateLimiter().Signal(rateLimiterSetValues(100, 10))
 	ctrl1 = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl1.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl1.t().rateLimiter)
 	fmt.Printf("test: Signal(100,10) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl1.RateLimiter().Signal(rateLimiterSetValues(100, 8))
 	ctrl = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl.t().rateLimiter)
 	fmt.Printf("test: Signal(100,8) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl.RateLimiter().Signal(rateLimiterSetValues(99, 8))
 	ctrl1 = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl1.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl1.t().rateLimiter)
 	fmt.Printf("test: Signal(99,8) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl1.RateLimiter().Signal(rateLimiterSetValues(-2, 5))
 	ctrl = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl.t().rateLimiter)
 	fmt.Printf("test: Signal(99,5) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	err = ctrl.RateLimiter().Signal(rateLimiterSetValues(88, -2))
 	ctrl1 = t.LookupByName(name)
-	limit, burst = rateLimiterState(ctrl1.t().rateLimiter)
+	limit, burst, _ = rateLimiterState(ctrl1.t().rateLimiter)
 	fmt.Printf("test: Signal(88,5) -> [error:%v] [limit:%v] [burst:%v]\n", err, limit, burst)
 
 	//Output:

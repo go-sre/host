@@ -18,29 +18,29 @@ func setTestErrorHandler() {
 */
 
 func Example_Initialize_Url() {
-	status := Initialize[runtime.DebugError]("", nil)
-	fmt.Printf("test: Initialize(\"\") -> [%v] [url:%v]\n", status, url)
+	status := InitializePush[runtime.DebugError]("", nil)
+	fmt.Printf("test: Initialize(\"\") -> [%v] [url:%v]\n", status, pushUrl)
 
-	status = Initialize[runtime.DebugError]("test", nil)
-	fmt.Printf("test: Initialize(\"\") -> [%v] [url:%v]\n", status, url)
+	status = InitializePush[runtime.DebugError]("test", nil)
+	fmt.Printf("test: Initialize(\"\") -> [%v] [url:%v]\n", status, pushUrl)
 
 	//Output:
-	//[[] github.com/go-sre/host/connector/initialize [invalid argument: uri is empty]]
+	//[[] github.com/go-sre/host/connector/initialize-push [invalid argument: uri is empty]]
 	//test: Initialize("") -> [Internal] [url:]
 	//test: Initialize("") -> [OK] [url:test]
 
 }
 
 func Example_Handler_NotProcessed() {
-	url = "http://localhost:8080/accesslog"
+	pushUrl = "http://localhost:8080/accesslog"
 
-	status := handler(nil)
+	status := pushHandler(nil)
 	fmt.Printf("test: handler(nil) -> [%v]\n", status)
 
 	req, _ := http.NewRequest("post", "http://localhost:8080/accesslog", nil)
 	data := new(accessdata.Entry)
 	data.AddRequest(req)
-	status = handler(data)
+	status = pushHandler(data)
 	fmt.Printf("test: handler(data) -> [%v]\n", status)
 
 	//Output:
@@ -51,12 +51,12 @@ func Example_Handler_NotProcessed() {
 }
 
 func Example_Handler_ConnectFailure() {
-	url = "http://localhost:8080/accesslog"
+	pushUrl = "http://localhost:8080/accesslog"
 
 	req, _ := http.NewRequest("post", "localhost:8081/accesslog", nil)
 	data := new(accessdata.Entry)
 	data.AddRequest(req)
-	status := handler(data)
+	status := pushHandler(data)
 	fmt.Printf("test: handler(data) -> [%v]\n", status)
 
 	//Output:
@@ -72,7 +72,7 @@ func Example_Handler_Processed() {
 	//	return true
 	//}
 
-	status := Initialize[runtime.DebugError]("http://localhost:8086/access-log", nil)
+	status := InitializePush[runtime.DebugError]("http://localhost:8086/access-log", nil)
 	fmt.Printf("test: Initialize() -> [%v]\n", status)
 
 	req, _ := http.NewRequest("POST", "http://localhost:8081/accesslog", nil)
@@ -81,7 +81,7 @@ func Example_Handler_Processed() {
 
 	extract("egress", time.Now(), time.Millisecond*450, req, resp, "test-route", -1, 50, 5, "false", "true", "RL")
 	time.Sleep(time.Second * 2)
-	Shutdown()
+	ShutdownPush()
 
 	//Output:
 	//test: Initialize() -> [OK]

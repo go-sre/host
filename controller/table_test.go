@@ -70,7 +70,7 @@ func ExampleTable_SetHostController_Ingress() {
 	err := t.SetHostController(newRoute("", NewTimeoutConfig(true, 503, time.Second)))
 	fmt.Printf("test: SetHostController(newRoute) -> %v\n", err)
 
-	err = t.SetHostController(newRoute("", NewRateLimiterConfig(true, 504, 100, 25)))
+	err = t.SetHostController(newRoute("", NewRateLimiterConfig(true, 504, 100, 25, "")))
 	fmt.Printf("test: SetHostController(newRoute) -> %v\n", err)
 
 	//Output:

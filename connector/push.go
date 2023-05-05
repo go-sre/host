@@ -8,24 +8,21 @@ import (
 	"golang.org/x/time/rate"
 	"net/http"
 	url2 "net/url"
-	"reflect"
 	"strings"
 	"time"
 )
 
 type messageHandler func(l *accessdata.Entry) bool
-type pkg struct{}
 
 var (
-	pkgPath      = reflect.TypeOf(any(pkg{})).PkgPath()
-	locInit      = pkgPath + "/initialize"
-	locDo        = pkgPath + "/do"
-	url          string
-	c            chan *accessdata.Entry
-	client                      = http.DefaultClient
-	handler      messageHandler = do
-	errorHandler runtime.ErrorHandleFn
-	operators    = []accessdata.Operator{
+	pushLocInit      = pkgPath + "/initialize-push"
+	pushLocDo        = pkgPath + "/do"
+	pushUrl          string
+	pushC            chan *accessdata.Entry
+	pushClient                      = http.DefaultClient
+	pushHandler      messageHandler = pushDo
+	pushErrorHandler runtime.ErrorHandleFn
+	operators        = []accessdata.Operator{
 		{Name: "start-time", Value: accessdata.StartTimeOperator},
 		{Name: "duration-ms", Value: accessdata.DurationOperator},
 		{Name: "traffic", Value: accessdata.TrafficOperator},
@@ -56,67 +53,67 @@ var (
 	}
 )
 
-func Initialize[E runtime.ErrorHandler](uri string, newClient *http.Client) *runtime.Status {
-	errorHandler = runtime.NewErrorHandler[E]()
+func InitializePush[E runtime.ErrorHandler](uri string, newClient *http.Client) *runtime.Status {
+	pushErrorHandler = runtime.NewErrorHandler[E]()
 	if uri == "" {
-		return errorHandler(nil, locInit, errors.New("invalid argument: uri is empty"))
+		return pushErrorHandler(nil, pushLocInit, errors.New("invalid argument: uri is empty"))
 	}
 	u, err1 := url2.Parse(uri)
 	if err1 != nil {
-		return errorHandler(nil, locInit, err1)
+		return pushErrorHandler(nil, pushLocInit, err1)
 	}
-	url = u.String()
-	c = make(chan *accessdata.Entry, 100)
-	go receive()
+	pushUrl = u.String()
+	pushC = make(chan *accessdata.Entry, 100)
+	go pushReceive()
 	if newClient != nil {
-		client = newClient
+		pushClient = newClient
 	}
 	controller.SetExtractFn(extract)
 	return runtime.NewStatusOK()
 }
 
-func Shutdown() {
-	if c != nil {
-		close(c)
+func ShutdownPush() {
+	if pushC != nil {
+		close(pushC)
 	}
 }
 
 func extract(traffic string, start time.Time, duration time.Duration, req *http.Request, resp *http.Response, routeName string, timeout int, limit rate.Limit, burst int, retry, proxy, statusFlags string) {
-	c <- accessdata.NewEntry(traffic, start, duration, req, resp, routeName, timeout, limit, burst, retry, proxy, statusFlags)
+	pushC <- accessdata.NewEntry(traffic, start, duration, req, resp, routeName, timeout, limit, burst, retry, proxy, statusFlags)
 }
 
-func do(entry *accessdata.Entry) bool {
+func pushDo(entry *accessdata.Entry) bool {
 	if entry == nil {
-		errorHandler(nil, locDo, errors.New("invalid argument: access log data is nil"))
+		pushErrorHandler(nil, pushLocDo, errors.New("invalid argument: access log data is nil"))
 		return false
 	}
 	// let's not extract the extractor, the extractor, the extractor ...
-	if entry.Url == url {
+	if entry.Url == pushUrl {
 		return false
 	}
 	var req *http.Request
 	var err error
 
 	reader := strings.NewReader(accessdata.WriteJson(operators, entry))
-	req, err = http.NewRequest(http.MethodPut, url, reader)
+	req, err = http.NewRequest(http.MethodPut, pushUrl, reader)
 	if err == nil {
-		_, err = client.Do(req)
+		_, err = pushClient.Do(req)
 	}
 	if err != nil {
-		errorHandler(nil, locDo, err)
+		pushErrorHandler(nil, pushLocDo, err)
 		return false
 	}
 	return true
 }
 
-func receive() {
+func pushReceive() {
 	for {
 		select {
-		case msg, open := <-c:
+		case msg, open := <-pushC:
 			if !open {
 				return
 			}
-			handler(msg)
+			pushHandler(msg)
 		default:
 		}
 	}

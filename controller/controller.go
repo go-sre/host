@@ -207,11 +207,12 @@ func (c *controller) LogHttpIngress(start time.Time, duration time.Duration, req
 	if c.ping {
 		traffic = PingTraffic
 	}
-	limit, burst := rateLimiterState(c.rateLimiter)
+	limit, burst, threshold := rateLimiterState(c.rateLimiter)
+	proxyValid, proxyThreshold := proxyState(c.proxy)
 	if defaultExtractFn != nil {
-		defaultExtractFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
+		defaultExtractFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, "", proxyValid, proxyThreshold, statusFlags)
 	}
-	defaultLogFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
+	defaultLogFn(traffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, "", proxyValid, proxyThreshold, statusFlags)
 }
 
 func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req *http.Request, resp *http.Response, retry bool, statusFlags string) {
@@ -220,6 +221,7 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 	}
 	var limit rate.Limit
 	var burst int
+	var threshold string
 	var retryStr = ""
 
 	if c.retry.IsEnabled() {
@@ -232,12 +234,13 @@ func (c *controller) LogHttpEgress(start time.Time, duration time.Duration, req 
 	if strings.HasPrefix(statusFlags, RetryRateLimitFlag) || retry {
 		limit, burst = retryState(c.retry)
 	} else {
-		limit, burst = rateLimiterState(c.rateLimiter)
+		limit, burst, threshold = rateLimiterState(c.rateLimiter)
 	}
+	proxyValid, proxyThreshold := proxyState(c.proxy)
 	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, retryStr, proxyState(c.proxy), statusFlags)
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, retryStr, proxyValid, proxyThreshold, statusFlags)
 	}
-	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, retryStr, proxyState(c.proxy), statusFlags)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, retryStr, proxyValid, proxyThreshold, statusFlags)
 }
 
 func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCode int, uri, requestId, method, statusFlags string) {
@@ -246,9 +249,10 @@ func (c *controller) LogEgress(start time.Time, duration time.Duration, statusCo
 
 	resp := new(http.Response)
 	resp.StatusCode = statusCode
-	limit, burst := rateLimiterState(c.rateLimiter)
+	limit, burst, threshold := rateLimiterState(c.rateLimiter)
+	proxyValid, proxyThreshold := proxyState(c.proxy)
 	if defaultExtractFn != nil {
-		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
+		defaultExtractFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, "", proxyValid, proxyThreshold, statusFlags)
 	}
-	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, "", proxyState(c.proxy), statusFlags)
+	defaultLogFn(EgressTraffic, start, duration, req, resp, c.Name(), timeoutState(c.timeout), limit, burst, threshold, "", proxyValid, proxyThreshold, statusFlags)
 }

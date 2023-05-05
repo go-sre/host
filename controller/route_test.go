@@ -18,17 +18,17 @@ func ExampleNewRoute() {
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter"
-	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25))
+	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25, ""))
 	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter-retry"
-	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}))
+	route = newRoute(name, NewTimeoutConfig(true, 504, time.Second*2), NewRateLimiterConfig(true, 503, 100, 25, ""), NewRetryConfig(false, 100, 25, time.Second, []int{504, 503}))
 	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
 	name = "timeout-rateLimiter-nil"
-	route = newRoute(name, nil, NewTimeoutConfig(true, 504, time.Second*2), nil, NewRateLimiterConfig(true, 503, 100, 25), nil)
+	route = newRoute(name, nil, NewTimeoutConfig(true, 504, time.Second*2), nil, NewRateLimiterConfig(true, 503, 100, 25, ""), nil)
 	fmt.Printf("test: newRoute() -> [name:%v] [timeout:%v] [rateLimiter:%v] [retry:%v]\n", name,
 		route.Timeout != nil, route.RateLimiter != nil, route.Retry != nil)
 
@@ -67,7 +67,7 @@ func ExampleConfig_Marshal() {
 	fmt.Printf("test: Config{} -> [error:%v] %v\n", err, string(buf))
 
 	//Output:
-	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Enabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Enabled":false,"StatusCode":503,"Limit":100,"Burst":25},"Retry":{"Enabled":false,"Limit":100,"Burst":33,"Wait":500,"StatusCodes":[503,504]},"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null,"Action":null}}
+	//test: Config{} -> [error:<nil>] {"Name":"test-route","Pattern":"google.com","Traffic":"ingress","Ping":true,"Protocol":"HTTP11","Timeout":{"Enabled":false,"StatusCode":504,"Duration":20000},"RateLimiter":{"Enabled":false,"StatusCode":503,"Limit":100,"Burst":25,"Threshold":""},"Retry":{"Enabled":false,"Limit":100,"Burst":33,"Wait":500,"StatusCodes":[503,504]},"Proxy":{"Enabled":false,"Pattern":"http:","Headers":null,"Action":null,"Threshold":""}}
 
 }
 

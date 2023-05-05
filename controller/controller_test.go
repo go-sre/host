@@ -15,7 +15,7 @@ func behaviorValues(behavior string) url.Values {
 
 func ExampleController_newController() {
 	t := newTable(true, false)
-	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10, ""))
 
 	ctrl, _ := newController(route, t)
 	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled())
@@ -34,7 +34,7 @@ func ExampleController_newController() {
 
 func ExampleController_newController_config() {
 	t := newTable(true, false)
-	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), nil, NewRateLimiterConfig(true, 503, 100, 10), nil)
+	route := NewRoute("test", EgressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), nil, NewRateLimiterConfig(true, 503, 100, 10, ""), nil)
 
 	ctrl, _ := newController(route, t)
 	fmt.Printf("test: newController() -> [timeout:%v] [rateLimit:%v] [retry:%v]\n", ctrl.Timeout().IsEnabled(), ctrl.RateLimiter().IsEnabled(), ctrl.Retry().IsEnabled())
@@ -54,7 +54,7 @@ func ExampleController_newController_config() {
 
 func ExampleController_newController_Error() {
 	t := newTable(false, false)
-	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
+	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10, ""))
 
 	_, errs := newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
@@ -71,7 +71,7 @@ func ExampleController_newController_Error() {
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
-	route = newRoute("test", NewRateLimiterConfig(true, 504, -1, 10))
+	route = newRoute("test", NewRateLimiterConfig(true, 504, -1, 10, ""))
 	_, errs = newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)
 
@@ -86,7 +86,7 @@ func ExampleController_newController_Error() {
 
 func ExampleController_Signal() {
 	t := newTable(false, false)
-	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10))
+	route := NewRoute("test", IngressTraffic, "", false, NewTimeoutConfig(true, 0, time.Millisecond*1500), NewRateLimiterConfig(true, 503, 100, 10, ""))
 
 	ctrl, errs := newController(route, t)
 	fmt.Printf("test: newController() -> [errs:%v]\n", errs)

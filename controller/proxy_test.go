@@ -20,10 +20,10 @@ func (testAction2) Signal(values url.Values) error {
 
 func Example_newProxy() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", []Header{{"name", "value"}, {"name2", "value2"}}, nil))
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", []Header{{"name", "value"}, {"name2", "value2"}}, nil, ""))
 	fmt.Printf("test: newProxy() -> [name:%v] [current:%v] [headers:%v]\n", p.name, p.config.Pattern, p.config.Headers)
 
-	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil, nil))
+	p = newProxy("test-route2", t, NewProxyConfig(false, "https://google.com", nil, nil, ""))
 	fmt.Printf("test: newProxy() -> [name:%v] [current:%v]\n", p.name, p.config.Pattern)
 
 	err := nilProxy.validate()
@@ -46,41 +46,41 @@ func Example_newProxy() {
 
 func ExampleProxy_State() {
 	t := newTable(true, false)
-	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil, nil))
+	p := newProxy("test-route", t, NewProxyConfig(false, "http://localhost:8080", nil, nil, "20"))
 
-	//m := make(map[string]string, 16)
-	//proxyState(p)
-	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v]\n", p.IsEnabled(), proxyState(p))
-	//m = make(map[string]string, 16)
+	valid, threshold := proxyState(p)
+	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v] [threshold:%v]\n", p.IsEnabled(), valid, threshold)
+
 	p.config.Enabled = true
 
-	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v]\n", p.IsEnabled(), proxyState(p))
+	valid, threshold = proxyState(p)
+	fmt.Printf("test: proxyState(p) -> [enabled:%v] [proxied:%v] [threshold:%v]\n", p.IsEnabled(), valid, threshold)
 
 	//Output:
-	//test: proxyState(p) -> [enabled:false] [proxied:]
-	//test: proxyState(p) -> [enabled:true] [proxied:true]
+	//test: proxyState(p) -> [enabled:false] [proxied:] [threshold:]
+	//test: proxyState(p) -> [enabled:true] [proxied:true] [threshold:20]
 
 }
 
 func ExampleProxy_BuildUrl() {
 	t := newTable(true, false)
 	uri, _ := url.Parse("https://localhost:8080/basePath/resource?first=false")
-	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:", nil, nil))
+	c := newProxy("proxy-route", t, NewProxyConfig(false, "http:", nil, nil, ""))
 
 	fmt.Printf("test: InputUrl() -> %v\n", uri.String())
 
 	uri2 := c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com", nil, nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com", nil, nil, ""))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search", nil, nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search", nil, nil, ""))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
-	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test", nil, nil))
+	c = newProxy("proxy-route", t, NewProxyConfig(false, "http://google.com/search?q=test", nil, nil, ""))
 	uri2 = c.BuildUrl(uri)
 	fmt.Printf("test: BuildUrl(%v) -> %v\n", c.config.Pattern, uri2.String())
 
@@ -94,7 +94,7 @@ func ExampleProxy_BuildUrl() {
 
 func ExampleProxy_SetPattern() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080", nil, nil)
+	config := NewProxyConfig(false, "http://localhost:8080", nil, nil, "")
 	t := newTable(true, false)
 
 	errs := t.AddController(newRoute(name, config))
@@ -126,7 +126,7 @@ func ExampleProxy_SetPattern() {
 
 func ExampleProxy_Toggle() {
 	name := "test-route"
-	config := NewProxyConfig(false, "http://localhost:8080", nil, nil)
+	config := NewProxyConfig(false, "http://localhost:8080", nil, nil, "")
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
@@ -151,7 +151,7 @@ func ExampleProxy_Action() {
 	var action testAction
 	var action2 testAction2
 	name := "test-route"
-	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action)
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action, "")
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
@@ -176,7 +176,7 @@ func ExampleProxy_Action() {
 func ExampleProxy_SetAction() {
 	var action testAction
 	name := "test-route"
-	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, nil)
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, nil, "")
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))
@@ -202,7 +202,7 @@ func ExampleProxy_SetAction() {
 func ExampleProxy_SignalAction() {
 	var action testAction
 	name := "test-route"
-	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action)
+	config := NewProxyConfig(true, "urn:postgresql:host:path", nil, action, "")
 	t := newTable(true, false)
 
 	ok := t.AddController(newRoute(name, config))

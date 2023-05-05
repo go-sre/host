@@ -28,11 +28,12 @@ type RateLimiterConfig struct {
 	StatusCode int
 	Limit      rate.Limit
 	Burst      int
+	Threshold  string
 }
 
-var nilRateLimiter = newRateLimiter(NilBehaviorName, nil, NewRateLimiterConfig(false, 0, 1, 1))
+var nilRateLimiter = newRateLimiter(NilBehaviorName, nil, NewRateLimiterConfig(false, 0, 1, 1, ""))
 
-func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst int) *RateLimiterConfig {
+func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst int, threshold string) *RateLimiterConfig {
 	c := new(RateLimiterConfig)
 	c.Limit = limit
 	c.Burst = burst
@@ -41,6 +42,7 @@ func NewRateLimiterConfig(enabled bool, statusCode int, limit rate.Limit, burst 
 	}
 	c.StatusCode = statusCode
 	c.Enabled = enabled
+	c.Threshold = threshold
 	return c
 }
 
@@ -79,9 +81,10 @@ func (r *rateLimiter) validate() error {
 	return nil
 }
 
-func rateLimiterState(r *rateLimiter) (rate.Limit, int) {
+func rateLimiterState(r *rateLimiter) (rate.Limit, int, string) {
 	var limit rate.Limit = -1
 	var burst = -1
+	var threshold = ""
 
 	if r != nil && r.IsEnabled() {
 		limit = r.config.Limit
@@ -89,15 +92,9 @@ func rateLimiterState(r *rateLimiter) (rate.Limit, int) {
 			limit = RateLimitInfValue
 		}
 		burst = r.config.Burst
+		threshold = r.config.Threshold
 	}
-	return limit, burst
-
-	//if m == nil {
-	//		m = make(map[string]string, 16)
-	//	}
-	//	m[RateLimitName] = fmt.Sprintf("%v", limit)
-	//	m[RateBurstName] = strconv.Itoa(burst)
-	//	return m
+	return limit, burst, threshold
 }
 
 func (r *rateLimiter) IsEnabled() bool { return r.config.Enabled }

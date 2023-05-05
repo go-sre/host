@@ -23,20 +23,22 @@ type Proxy interface {
 }
 
 type ProxyConfig struct {
-	Enabled bool
-	Pattern string
-	Headers []Header
-	Action  Actuator
+	Enabled   bool
+	Pattern   string
+	Headers   []Header
+	Action    Actuator
+	Threshold string
 }
 
-var nilProxy = newProxy(NilBehaviorName, nil, NewProxyConfig(false, "", nil, nil))
+var nilProxy = newProxy(NilBehaviorName, nil, NewProxyConfig(false, "", nil, nil, ""))
 
-func NewProxyConfig(enabled bool, pattern string, headers []Header, action Actuator) *ProxyConfig {
+func NewProxyConfig(enabled bool, pattern string, headers []Header, action Actuator, threshold string) *ProxyConfig {
 	p := new(ProxyConfig)
 	p.Enabled = enabled
 	p.Pattern = pattern
 	p.Headers = headers
 	p.Action = action
+	p.Threshold = threshold
 	return p
 }
 
@@ -69,14 +71,14 @@ func (p *proxy) validate() error {
 	return nil
 }
 
-func proxyState(p *proxy) string {
+func proxyState(p *proxy) (string, string) {
 	if !p.IsEnabled() {
-		return ""
+		return "", ""
 	}
 	if len(p.Pattern()) > 0 {
-		return "true"
+		return "true", p.config.Threshold
 	}
-	return "false"
+	return "false", p.config.Threshold
 }
 
 func (p *proxy) Signal(values url.Values) error {
