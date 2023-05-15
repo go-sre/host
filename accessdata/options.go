@@ -9,3 +9,7 @@ func SetOrigin(region, zone, subZone, service, instanceId string) {
 	origin.Service = service
 	origin.InstanceId = instanceId
 }
+
+func GetOrigin() Origin {
+	return origin
+}
