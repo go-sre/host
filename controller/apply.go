@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"github.com/go-sre/core/runtime"
 	"time"
 )
 
@@ -12,8 +13,20 @@ const (
 	StatusRateLimited      = 94
 )
 
+type EgressController interface {
+	Apply(ctx context.Context, statusCode func() int, uri, requestId, method string) (fn func(), newCtx context.Context, rateLimited bool)
+}
+
+// DebugEgressController - debug egress controller
+type DebugEgressController struct{}
+
+// Apply - function to be used by non Http egress traffic to apply a controller
+func (e *DebugEgressController) Apply(ctx context.Context, statusCode func() int, uri, requestId, method string) (func(), context.Context, bool) {
+	return nil, nil, false
+}
+
 // EgressApply - function to be used by non Http egress traffic to apply an controller
-func EgressApply(ctx context.Context, statusCode func() int, uri, requestId, method string) (func(), context.Context, bool) {
+func Apply(ctx context.Context, statusCode func() int, uri, requestId, method string) (func(), context.Context, bool) {
 	statusFlags := ""
 	limited := false
 	start := time.Now()
@@ -40,4 +53,10 @@ func EgressApply(ctx context.Context, statusCode func() int, uri, requestId, met
 		}
 		ctrl.LogEgress(start, time.Since(start), code, uri, requestId, method, statusFlags)
 	}, newCtx, limited
+}
+
+func NewStatusCode(status **runtime.Status) func() int {
+	return func() int {
+		return int((*(status)).Code())
+	}
 }
